@@ -43,6 +43,7 @@ const AppContent: React.FC = () => {
   } = useCampaign();
 
   const [savedCampaignId, setSavedCampaignId] = React.useState<string | null>(null);
+  const [isHistoryOpen, setIsHistoryOpen] = React.useState(false);
 
   // Handle ?share=ID in URL — load shared campaign on mount
   React.useEffect(() => {
@@ -169,14 +170,17 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="app">
-      <Header />
+      <Header onOpenHistory={() => setIsHistoryOpen(true)} />
+
+      {/* History Side Panel Drawer */}
+      <HistoryPanel
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        onReload={handleReloadFromHistory}
+      />
+
       <Container>
         <Stepper />
-
-        {/* History panel — visible only when logged in (step 1) */}
-        {currentStep === 1 && (
-          <HistoryPanel onReload={handleReloadFromHistory} />
-        )}
 
         {/* STEP 1: Source + Confession */}
         {currentStep === 1 && (

@@ -3,7 +3,11 @@ import { useAuth } from '../../contexts/AuthContext';
 import AuthModal from '../Auth/AuthModal';
 import './Header.css';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+    onOpenHistory?: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ onOpenHistory }) => {
     const { user, signOut, loading } = useAuth();
     const [showAuthModal, setShowAuthModal] = useState(false);
 
@@ -33,17 +37,28 @@ const Header: React.FC = () => {
                         {!loading && (
                             <div className="header-auth">
                                 {user ? (
-                                    <div className="user-pill">
-                                        <div className="user-avatar">{initials}</div>
-                                        <span className="user-email">{shortEmail}</span>
-                                        <button className="user-signout" onClick={signOut} title="Se déconnecter">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                                                <polyline points="16 17 21 12 16 7" />
-                                                <line x1="21" y1="12" x2="9" y2="12" />
-                                            </svg>
-                                        </button>
-                                    </div>
+                                    <>
+                                        {onOpenHistory && (
+                                            <button className="header-history-btn" onClick={onOpenHistory} title="Ouvrir l'historique">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <circle cx="12" cy="12" r="10" />
+                                                    <polyline points="12 6 12 12 16 14" />
+                                                </svg>
+                                                <span className="hide-mobile">Historique</span>
+                                            </button>
+                                        )}
+                                        <div className="user-pill">
+                                            <div className="user-avatar">{initials}</div>
+                                            <span className="user-email">{shortEmail}</span>
+                                            <button className="user-signout" onClick={signOut} title="Se déconnecter">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                                                    <polyline points="16 17 21 12 16 7" />
+                                                    <line x1="21" y1="12" x2="9" y2="12" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </>
                                 ) : (
                                     <button
                                         className="btn btn-secondary header-login-btn"

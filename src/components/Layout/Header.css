@@ -92,11 +92,38 @@
     position: relative;
     display: flex;
     align-items: center;
+    gap: var(--sp-3);
 }
 
 .header-login-btn {
     padding: 9px 18px;
     font-size: var(--fs-sm);
+}
+
+.header-history-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: 7px 14px;
+    background: transparent;
+    border: 1px solid var(--c-border-md);
+    border-radius: var(--r-full);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--c-text-2);
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-out);
+}
+
+.header-history-btn:hover {
+    background: var(--c-surface-2);
+    color: var(--c-text);
+    border-color: var(--c-border-md);
+}
+
+.header-history-btn svg {
+    width: 16px;
+    height: 16px;
 }
 
 /* User pill when connected */
@@ -176,5 +203,14 @@
 
     .user-email {
         display: none;
+    }
+
+    .hide-mobile {
+        display: none;
+    }
+
+    .header-history-btn {
+        padding: 8px;
+        border-radius: 50%;
     }
 }
