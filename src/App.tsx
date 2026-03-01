@@ -45,6 +45,8 @@ const AppContent: React.FC = () => {
   } = useCampaign();
 
   const [savedCampaignId, setSavedCampaignId] = React.useState<string | null>(null);
+  const [emailError, setEmailError] = React.useState<string | null>(null);
+  const [emailSuccess, setEmailSuccess] = React.useState(false);
 
   // Handle ?share=ID in URL — load shared campaign on mount
   React.useEffect(() => {
@@ -91,7 +93,6 @@ const AppContent: React.FC = () => {
       setError(null);
       if (inputMethod === 'youtube') {
         try {
-          // Use isGenerating state to show loading spinner on the button
           setIsGenerating(true);
           const text = await getTranscript(sourceContent);
           setTranscript(text);
@@ -120,6 +121,8 @@ const AppContent: React.FC = () => {
   const handleGenerate = async () => {
     setIsGenerating(true);
     setError(null);
+    setEmailError(null);
+    setEmailSuccess(false);
 
     try {
       const config = getConfig();
@@ -137,35 +140,48 @@ const AppContent: React.FC = () => {
 
       setCampaign(generatedCampaign);
 
-      // Save to Supabase if user is logged in
+      // ── 1. Save to Supabase (only if logged in) ─────────────────────────
       if (user) {
-        const { data: saved } = await supabase.from('campaigns').insert({
-          user_id: user.id,
-          title: generatedCampaign.messageTitle || config.messageTitle || null,
-          speaker_name: config.speakerName || null,
-          confession: config.confession,
-          duration: config.duration,
-          tone: config.tone,
-          content_options: config.contentOptions,
-          days: generatedCampaign.days,
-          quotes: generatedCampaign.quotes,
-        }).select('id').single();
-        if (saved?.id) setSavedCampaignId(saved.id);
-
-        // Send email via Brevo
         try {
-          await fetch('/api/email', {
+          const { data: saved } = await supabase.from('campaigns').insert({
+            user_id: user.id,
+            title: generatedCampaign.messageTitle || config.messageTitle || null,
+            speaker_name: config.speakerName || null,
+            confession: config.confession,
+            duration: config.duration,
+            tone: config.tone,
+            content_options: config.contentOptions,
+            days: generatedCampaign.days,
+            quotes: generatedCampaign.quotes,
+          }).select('id').single();
+          if (saved?.id) setSavedCampaignId(saved.id);
+        } catch (dbErr) {
+          console.error('Erreur sauvegarde Supabase:', dbErr);
+        }
+      }
+
+      // ── 2. Send Email (logged in OR guest with email provided) ──────────
+      const targetEmail = userEmail || user?.email;
+      if (targetEmail) {
+        try {
+          const emailResponse = await fetch('/api/email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              email: user.email,
+              email: targetEmail,
               subject: 'Votre parcours Message+ est prêt 🎉',
               text: generatedCampaign.days.map((d: any) => `Jour ${d.day}: ${d.theme}\n\nWhatsApp: ${d.whatsapp}\n\nEmail: ${d.email.subject}\n${d.email.body}\n\nRéseaux Sociaux: ${d.social}`).join('\n\n---\n\n')
             })
           });
+
+          if (!emailResponse.ok) {
+            const errData = await emailResponse.json();
+            throw new Error(errData.error || 'Erreur lors de l\'envoi de l\'email');
+          }
+          setEmailSuccess(true);
         } catch (emailErr) {
-          console.error('Erreur lors de l\'envoi de l\'email:', emailErr);
-          // We do not block the UI for email failures
+          console.error('Email error:', emailErr);
+          setEmailError(emailErr instanceof Error ? emailErr.message : 'Échec de l\'envoi de l\'e-mail');
         }
       }
     } catch (err) {
@@ -177,9 +193,10 @@ const AppContent: React.FC = () => {
 
   const handleNewCampaign = () => {
     resetCampaign();
+    setEmailError(null);
+    setEmailSuccess(false);
   };
 
-  // Reload a saved campaign from history
   const handleReloadFromHistory = (saved: SavedCampaign) => {
     const reloaded = {
       id: saved.id,
@@ -188,10 +205,10 @@ const AppContent: React.FC = () => {
       confession: saved.confession as 'protestant' | 'catholic',
       duration: saved.duration,
       tone: saved.tone as 'warm-encouraging' | 'reflective' | 'challenging' | 'pastoral' | 'contemplative',
-      contentOptions: saved.content_options as import('./types/campaign').ContentOptions,
+      contentOptions: saved.content_options as any,
       messageTitle: saved.title ?? undefined,
       speakerName: saved.speaker_name ?? undefined,
-      days: saved.days as import('./types/campaign').DayContent[],
+      days: saved.days as any[],
       quotes: (saved as any).quotes ?? [],
       createdAt: new Date(saved.created_at),
     };
@@ -413,9 +430,16 @@ const AppContent: React.FC = () => {
                   <h2>Votre parcours Message+ est prêt ! 🎉</h2>
                   {campaign.messageTitle && <h3 style={{ marginTop: '0.5rem', marginBottom: '1rem', color: 'var(--c-accent)', fontSize: '1.5rem', fontWeight: 600 }}>{campaign.messageTitle}</h3>}
                   <p>Voici les {campaign.days.length} jours de contenu généré pour votre communauté.</p>
-                  {userEmail && (
-                    <p className="email-sent-notice">
-                      📧 Une copie a été envoyée à {userEmail}
+
+                  {(userEmail || user?.email) && (
+                    <p className={`email-sent-notice ${emailError ? 'error' : ''}`} style={emailError ? { background: 'rgba(239, 68, 68, 0.2)', borderColor: 'rgba(239, 68, 68, 0.3)', color: '#ffcfcf' } : {}}>
+                      {emailSuccess ? (
+                        <>📧 Une copie a été envoyée avec succès à <strong>{userEmail || user?.email}</strong></>
+                      ) : emailError ? (
+                        <>⚠️ Échec de l'envoi à {userEmail || user?.email} : {emailError}</>
+                      ) : (
+                        <>⏳ Envoi de l'e-mail en cours...</>
+                      )}
                     </p>
                   )}
                 </div>
