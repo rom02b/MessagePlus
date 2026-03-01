@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         '/api': {
-          target: 'https://messageplus.vercel.app',
+          target: 'https://message-plus.vercel.app',
           changeOrigin: true,
           secure: true,
         },

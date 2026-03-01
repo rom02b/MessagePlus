@@ -25,12 +25,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const brevoApiKey = process.env.BREVO_API_KEY;
 
         if (!brevoApiKey) {
-            console.error('BREVO_API_KEY manquante');
-            // If the key is missing, we log it and return a pseudo-success so we don't break the UI in local dev
-            return res.status(200).json({
-                success: true,
-                warning: 'BREVO_API_KEY manquante, email ignoré en local.'
-            });
+            console.error('BREVO_API_KEY manquante sur le serveur.');
+            return res.status(500).json({ error: 'La configuration des emails sur le serveur est incomplète (clé API manquante).' });
         }
 
         const defaultHtml = html || `
