@@ -23,11 +23,60 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(400).json({ error: 'L\'URL YouTube est requise.' });
         }
 
-        // Fetch transcript
-        const transcriptRaw = await YoutubeTranscript.fetchTranscript(url);
+        // Extract video ID for fallback
+        let videoId = '';
+        try {
+            const urlObj = new URL(url);
+            if (urlObj.hostname.includes('youtube.com')) {
+                videoId = urlObj.searchParams.get('v') || '';
+            } else if (urlObj.hostname.includes('youtu.be')) {
+                videoId = urlObj.pathname.slice(1);
+            }
+        } catch (e) {
+            // ignore
+        }
 
-        // Assemble text
-        const text = transcriptRaw.map(item => item.text).join(' ');
+        let text = '';
+        let primaryFailed = false;
+
+        try {
+            // First attempt: official youtube-transcript package
+            const transcriptRaw = await YoutubeTranscript.fetchTranscript(url, { lang: 'fr' })
+                .catch(() => YoutubeTranscript.fetchTranscript(url)); // Fallback to any lang
+
+            text = transcriptRaw.map(item => item.text).join(' ');
+        } catch (error: any) {
+            console.warn('Méthode 1 échouée (protection bot potentielle), essai de la méthode 2...', error.message);
+            primaryFailed = true;
+        }
+
+        // If primary method failed, try the yt-to-text API fallback
+        if (primaryFailed && videoId) {
+            const fallbackResponse = await fetch("https://yt-to-text.com/api/v1/Subtitles", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-app-version": "1.0",
+                    "x-source": "tubetranscript"
+                },
+                body: JSON.stringify({ video_id: videoId })
+            });
+
+            if (fallbackResponse.ok) {
+                const data = await fallbackResponse.json();
+                if (data.data && data.data.transcripts) {
+                    text = data.data.transcripts.map((t: any) => t.t).join(' ');
+                }
+            }
+
+            if (!text) {
+                throw new Error("Les deux méthodes d'extraction ont échoué.");
+            }
+        }
+
+        if (!text) {
+            throw new Error('Aucun sous-titre trouvé.');
+        }
 
         return res.status(200).json({ transcript: text });
     } catch (error: any) {
