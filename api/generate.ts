@@ -154,10 +154,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         const adminClient = createClient(supabaseUrl, supabaseServiceKey);
-        const { error: authError } = await adminClient.auth.getUser(token);
+        const { data: { user }, error: authError } = await adminClient.auth.getUser(token);
 
-        if (authError) {
+        if (authError || !user) {
             return res.status(401).json({ error: 'Session expirée. Veuillez vous reconnecter.' });
+        }
+
+        // ── Rate limiting (8 per day) ─────────────────────────────────────────
+        const startOfDay = new Date();
+        startOfDay.setUTCHours(0, 0, 0, 0);
+
+        const { count, error: countError } = await adminClient
+            .from('campaigns')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .gte('created_at', startOfDay.toISOString());
+
+        if (!countError && count !== null && count >= 8) {
+            return res.status(429).json({ error: 'Limite quotidienne atteinte (8 parcours maximum par jour). Veuillez réessayer demain.' });
         }
     }
 
