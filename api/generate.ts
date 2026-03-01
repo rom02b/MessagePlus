@@ -92,6 +92,8 @@ ${speakerName ? `## ORATEUR / PRÉDICATEUR : ${speakerName}` : ''}
 5. Le post réseaux sociaux doit être adapté à Instagram/Facebook.
 6. Respecte scrupuleusement la longueur demandée (${messageLength}).
 7. Toute la réponse doit être en FRANÇAIS.
+8. Tu DOIS ABSOLUMENT générer le champ "title" avec un titre général.
+9. Tu DOIS ABSOLUMENT générer le champ "quotes" avec un tableau de 3 citations piochées dans le texte.
 
 ## FORMAT DE RÉPONSE :
 Retourne UNIQUEMENT un objet JSON valide, sans markdown, sans balises \`\`\`json, sans commentaires.

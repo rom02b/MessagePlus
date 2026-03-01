@@ -410,7 +410,7 @@ const AppContent: React.FC = () => {
               <div className="results-section fade-in">
                 <div className="results-header">
                   <h2>Votre parcours Message+ est prêt ! 🎉</h2>
-                  {campaign.messageTitle && <h3 style={{ marginTop: '0.5rem', marginBottom: '1rem', color: 'var(--c-primary)', fontSize: '1.5rem' }}>{campaign.messageTitle}</h3>}
+                  {campaign.messageTitle && <h3 style={{ marginTop: '0.5rem', marginBottom: '1rem', color: 'var(--c-accent)', fontSize: '1.5rem', fontWeight: 600 }}>{campaign.messageTitle}</h3>}
                   <p>Voici les {campaign.days.length} jours de contenu généré pour votre communauté.</p>
                   {userEmail && (
                     <p className="email-sent-notice">
