@@ -1,6 +1,7 @@
 import React from 'react';
 import { CampaignProvider, useCampaign } from './contexts/CampaignContext';
 import Header from './components/Layout/Header';
+import Footer from './components/Layout/Footer';
 import Container from './components/Layout/Container';
 import Stepper from './components/Stepper/Stepper';
 import InputToggle from './components/Input/InputToggle';
@@ -298,6 +299,7 @@ const AppContent: React.FC = () => {
           </div>
         )}
       </Container>
+      <Footer />
     </div>
   );
 };
