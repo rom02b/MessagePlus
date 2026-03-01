@@ -33,11 +33,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     } catch (error: any) {
         console.error('Erreur lors de la récupération de la transcription:', error);
 
-        let errorMessage = 'Impossible de récupérer la transcription de cette vidéo.';
+        let errorMessage = 'Impossible d\'extraire la transcription : YouTube bloque l\'accès automatisé. Veuillez utiliser l\'onglet "Texte Long".';
         if (error.message && error.message.includes('Transcript is disabled')) {
-            errorMessage = 'Les sous-titres sont désactivés pour cette vidéo.';
+            errorMessage = 'YouTube bloque l\'accès automatisé aux sous-titres de cette vidéo (anti-bots). Veuillez utiliser l\'onglet "Texte Long" et y coller la transcription.';
         } else if (error.message && error.message.includes('No transcripts are available')) {
-            errorMessage = 'Aucun sous-titre n\'est disponible pour cette vidéo.';
+            errorMessage = 'Aucun sous-titre n\'est disponible pour cette vidéo. Veuillez utiliser l\'onglet "Texte Long".';
         }
 
         return res.status(500).json({ error: errorMessage });
