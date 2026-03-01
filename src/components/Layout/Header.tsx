@@ -73,8 +73,7 @@ const Header: React.FC<HeaderProps> = ({ onOpenHistory }) => {
 
                     <div className="header-tagline-block">
                         <h1>
-                            Transformez{' '}
-                            <span className="accent-word">vos prédications & homélies</span>
+                            Transformez <span className="accent-word">vos prédications</span>
                             <br />
                             en parcours d'engagement
                         </h1>
