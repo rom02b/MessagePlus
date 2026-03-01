@@ -192,7 +192,7 @@ const AppContent: React.FC = () => {
       messageTitle: saved.title ?? undefined,
       speakerName: saved.speaker_name ?? undefined,
       days: saved.days as import('./types/campaign').DayContent[],
-      quotes: (saved as unknown as { quotes?: string[] }).quotes ?? [],
+      quotes: (saved as any).quotes ?? [],
       createdAt: new Date(saved.created_at),
     };
     setCampaign(reloaded);

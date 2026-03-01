@@ -12,6 +12,7 @@ interface SavedCampaign {
     days: unknown;
     content_options: unknown;
     speaker_name: string | null;
+    quotes?: string[];
     created_at: string;
 }
 
@@ -44,7 +45,7 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ isOpen, onClose, onReload }
         setLoading(true);
         const { data } = await supabase
             .from('campaigns')
-            .select('id, title, confession, duration, tone, days, content_options, speaker_name, created_at')
+            .select('id, title, confession, duration, tone, days, content_options, speaker_name, quotes, created_at')
             .order('created_at', { ascending: false })
             .limit(20);
         setCampaigns(data ?? []);

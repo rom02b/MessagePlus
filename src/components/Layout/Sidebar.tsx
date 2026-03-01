@@ -33,7 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onReload, onNewCampaign }) => {
         setLoading(true);
         const { data } = await supabase
             .from('campaigns')
-            .select('id, title, confession, duration, tone, days, content_options, speaker_name, created_at')
+            .select('id, title, confession, duration, tone, days, content_options, speaker_name, quotes, created_at')
             .order('created_at', { ascending: false })
             .limit(30);
         setCampaigns(data ?? []);
