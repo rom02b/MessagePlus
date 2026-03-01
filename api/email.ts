@@ -50,7 +50,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 'api-key': brevoApiKey
             },
             body: JSON.stringify({
-                sender: { name: 'Message+', email: 'noreply@message-plus.app' }, // Replace with real sender if needed
+                sender: { name: 'Message+', email: 'rom02b@hotmail.fr' }, // Expéditeur obligatoirement validé sur Brevo
                 to: [{ email }],
                 subject: subject || 'Votre parcours Message+ est prêt 🎉',
                 htmlContent: defaultHtml
