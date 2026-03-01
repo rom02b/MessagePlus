@@ -1,52 +1,49 @@
+/* ── Tone Selector ── */
 .tone-selector {
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--sp-8);
 }
 
 .tone-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--spacing-sm);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
 }
 
 .tone-card {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-md);
-    background-color: var(--color-white);
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius-md);
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-4);
+    background: var(--c-surface-2);
+    border: 1.5px solid var(--c-border);
+    border-radius: var(--r-full);
+    font-family: var(--font-body);
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    color: var(--c-text-2);
     cursor: pointer;
-    transition: all var(--transition-base);
-    text-align: left;
-    font-size: var(--font-size-sm);
+    transition: all var(--dur-base) var(--ease-out);
 }
 
 .tone-card:hover {
-    border-color: var(--color-blue-light);
-    box-shadow: var(--shadow-sm);
-    transform: translateY(-2px);
+    border-color: rgba(0, 0, 0, 0.18);
+    background: var(--c-surface);
+    color: var(--c-text);
+    box-shadow: var(--sh-xs);
 }
 
 .tone-card.selected {
-    border-color: var(--color-primary);
-    background-color: rgba(231, 105, 55, 0.05);
-    box-shadow: var(--shadow-md);
+    background: var(--c-black);
+    border-color: var(--c-black);
+    color: var(--c-white);
+    box-shadow: 0 2px 10px rgba(15, 15, 16, 0.2);
 }
 
 .tone-emoji {
-    font-size: 1.5rem;
-    flex-shrink: 0;
+    font-size: 1em;
+    line-height: 1;
 }
 
 .tone-label {
-    color: var(--color-text-primary);
-    font-weight: 500;
-    line-height: 1.3;
-}
-
-@media (max-width: 768px) {
-    .tone-grid {
-        grid-template-columns: 1fr;
-    }
+    letter-spacing: -0.01em;
 }

@@ -44,7 +44,7 @@ const DayCard: React.FC<DayCardProps> = ({ dayContent }) => {
                 return (
                     <div className="email-content">
                         <div className="email-subject">
-                            <strong>Sujet :</strong> {dayContent.email.subject}
+                            <strong>Sujet</strong> {dayContent.email.subject}
                         </div>
                         <div className="email-body" dangerouslySetInnerHTML={{ __html: dayContent.email.body }} />
                     </div>
@@ -58,8 +58,10 @@ const DayCard: React.FC<DayCardProps> = ({ dayContent }) => {
         <div className="day-card">
             <div className="day-card-header">
                 <div>
-                    <h3 className="day-title">Jour {dayContent.day}</h3>
-                    <p className="day-theme">{dayContent.theme}</p>
+                    <div className="day-badge">
+                        <span className="day-number-pill">Jour {dayContent.day}</span>
+                    </div>
+                    <h3 className="day-title">{dayContent.theme}</h3>
                 </div>
                 <div className="day-verse">
                     <svg className="verse-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -68,7 +70,7 @@ const DayCard: React.FC<DayCardProps> = ({ dayContent }) => {
                     </svg>
                     <div>
                         <div className="verse-reference">{dayContent.verse.reference}</div>
-                        <div className="verse-text">"{dayContent.verse.text}"</div>
+                        <div className="verse-text">«{dayContent.verse.text}»</div>
                     </div>
                 </div>
             </div>
@@ -108,10 +110,10 @@ const DayCard: React.FC<DayCardProps> = ({ dayContent }) => {
                 {renderContent()}
             </div>
 
-            <button className="copy-btn" onClick={handleCopy}>
+            <button className={`copy-btn ${copied ? 'copied' : ''}`} onClick={handleCopy}>
                 {copied ? (
                     <>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                             <polyline points="20 6 9 17 4 12" />
                         </svg>
                         Copié !
