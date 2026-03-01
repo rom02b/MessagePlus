@@ -50,7 +50,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 'api-key': brevoApiKey
             },
             body: JSON.stringify({
-                sender: { name: 'Message+', email: 'rom02b@hotmail.fr' }, // Expéditeur obligatoirement validé sur Brevo
+                sender: {
+                    name: process.env.BREVO_SENDER_NAME || 'Message+',
+                    email: process.env.BREVO_SENDER_EMAIL || 'rom02b@hotmail.fr'
+                }, // L'email doit être validé sur le compte Brevo
                 to: [{ email }],
                 subject: subject || 'Votre parcours Message+ est prêt 🎉',
                 htmlContent: defaultHtml
