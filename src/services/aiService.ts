@@ -71,7 +71,7 @@ Seigneur, ouvre mon cœur à ta Parole. Aide-moi à vivre selon ta volonté aujo
 ${closing}`;
 };
 
-const generateEmailContent = (theme: string, verse: any, tone: string, confession: string): { subject: string; body: string } => {
+const generateEmailContent = (theme: string, verse: any, _tone: string, _confession: string): { subject: string; body: string } => {
   const subject = `Jour de réflexion : ${theme}`;
 
   const body = `
@@ -119,7 +119,7 @@ const generateEmailContent = (theme: string, verse: any, tone: string, confessio
   return { subject, body };
 };
 
-const generateSocialContent = (theme: string, verse: any, tone: string): string => {
+const generateSocialContent = (theme: string, verse: any, _tone: string): string => {
   return `✨ ${theme}
 
 "${verse.text}" - ${verse.reference}
@@ -130,12 +130,12 @@ const generateSocialContent = (theme: string, verse: any, tone: string): string 
 };
 
 // Extract themes and verses from source content (mock implementation)
-export const extractThemes = async (content: string): Promise<string[]> => {
+export const extractThemes = async (_content: string): Promise<string[]> => {
   // This would use AI to extract key themes
   return ['Foi', 'Amour', 'Espérance', 'Grâce'];
 };
 
-export const extractVerses = async (content: string): Promise<string[]> => {
+export const extractVerses = async (_content: string): Promise<string[]> => {
   // This would use AI to identify biblical references
   return ['Jean 3:16', 'Romains 8:28', 'Philippiens 4:13'];
 };

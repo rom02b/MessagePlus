@@ -1,6 +1,5 @@
 import React from 'react';
 import { useCampaign } from '../../contexts/CampaignContext';
-import type { InputMethod } from '../../types/campaign';
 import './InputToggle.css';
 
 const InputToggle: React.FC = () => {

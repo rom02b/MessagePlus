@@ -7,9 +7,7 @@ const MetadataInputs: React.FC = () => {
         messageTitle,
         setMessageTitle,
         speakerName,
-        setSpeakerName,
-        userEmail,
-        setUserEmail
+        setSpeakerName
     } = useCampaign();
 
     return (
