@@ -12,5 +12,14 @@ export default defineConfig(({ mode }) => {
       __SUPABASE_URL__: JSON.stringify(env.SUPABASE_URL || ''),
       __SUPABASE_ANON__: JSON.stringify(env.SUPABASE_ANON || ''),
     },
+    server: {
+      proxy: {
+        '/api': {
+          target: 'https://messageplus.vercel.app',
+          changeOrigin: true,
+          secure: true,
+        },
+      },
+    },
   }
 })
