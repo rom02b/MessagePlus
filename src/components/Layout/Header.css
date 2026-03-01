@@ -1,7 +1,7 @@
 /* ── Header ── */
 .header {
     background: var(--gradient-top);
-    padding: var(--sp-6) 0 var(--sp-10);
+    padding: var(--sp-10) 0 var(--sp-12);
     position: relative;
     overflow: hidden;
 }
@@ -20,7 +20,7 @@
 .header-inner {
     position: relative;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: var(--sp-4);
 }
