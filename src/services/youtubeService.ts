@@ -25,7 +25,7 @@ export const extractVideoId = (url: string): string | null => {
     return null;
 };
 
-// Mock transcript extraction - will need real API integration
+// Real API integration
 export const getTranscript = async (url: string): Promise<string> => {
     if (!isValidYouTubeUrl(url)) {
         throw new Error('URL YouTube invalide');
@@ -36,33 +36,19 @@ export const getTranscript = async (url: string): Promise<string> => {
         throw new Error('Impossible d\'extraire l\'ID de la vidéo');
     }
 
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    const response = await fetch('/api/transcript', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+    });
 
-    // Return mock transcript
-    return `
-Chers frères et sœurs,
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Erreur lors de la récupération de la transcription.');
+    }
 
-Aujourd'hui, je voudrais partager avec vous une réflexion sur la foi qui transforme nos vies. 
-Dans l'Évangile de Jean, chapitre 3, verset 16, nous lisons : "Car Dieu a tant aimé le monde 
-qu'il a donné son Fils unique, afin que quiconque croit en lui ne périsse point, mais qu'il ait 
-la vie éternelle."
-
-Cette parole nous révèle l'amour inconditionnel de Dieu pour chacun de nous. Peu importe d'où 
-nous venons, peu importe nos erreurs passées, Dieu nous aime et désire nous transformer par sa grâce.
-
-La foi n'est pas simplement une croyance intellectuelle, c'est une relation vivante avec Dieu. 
-C'est cette foi qui nous permet de vivre dans l'espérance, même dans les moments difficiles.
-
-Comme le dit l'apôtre Paul dans Romains 8:28 : "Nous savons, du reste, que toutes choses concourent 
-au bien de ceux qui aiment Dieu." Cette promesse nous rappelle que Dieu est à l'œuvre dans nos vies, 
-même quand nous ne le voyons pas.
-
-Je vous encourage cette semaine à méditer sur ces vérités et à permettre à Dieu de transformer 
-votre cœur par sa Parole.
-
-Que Dieu vous bénisse.
-  `.trim();
+    const data = await response.json();
+    return data.transcript;
 };
 
 // Get video metadata (title, thumbnail, etc.)

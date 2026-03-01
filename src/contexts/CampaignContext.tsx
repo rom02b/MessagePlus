@@ -15,6 +15,8 @@ interface CampaignContextType {
     setInputMethod: (method: InputMethod) => void;
     sourceContent: string;
     setSourceContent: (content: string) => void;
+    transcript: string | null;
+    setTranscript: (transcript: string | null) => void;
 
     // Configuration state
     confession: Confession;
@@ -69,6 +71,7 @@ export const CampaignProvider: React.FC<CampaignProviderProps> = ({ children }) 
     // Input state
     const [inputMethod, setInputMethod] = useState<InputMethod>('youtube');
     const [sourceContent, setSourceContent] = useState('');
+    const [transcript, setTranscript] = useState<string | null>(null);
 
     // Configuration state
     const [confession, setConfession] = useState<Confession>('protestant');
@@ -91,6 +94,7 @@ export const CampaignProvider: React.FC<CampaignProviderProps> = ({ children }) 
 
     const resetCampaign = () => {
         setSourceContent('');
+        setTranscript(null);
         setCampaign(null);
         setCurrentStep(1);
         setError(null);
@@ -113,6 +117,8 @@ export const CampaignProvider: React.FC<CampaignProviderProps> = ({ children }) 
         setInputMethod,
         sourceContent,
         setSourceContent,
+        transcript,
+        setTranscript,
         confession,
         setConfession,
         duration,

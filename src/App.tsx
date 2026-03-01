@@ -40,6 +40,8 @@ const AppContent: React.FC = () => {
     getConfig,
     resetCampaign,
     userEmail,
+    transcript,
+    setTranscript,
   } = useCampaign();
 
   const [savedCampaignId, setSavedCampaignId] = React.useState<string | null>(null);
@@ -84,10 +86,25 @@ const AppContent: React.FC = () => {
     return sourceContent.length >= 100;
   };
 
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
     if (currentStep === 1 && canProceedFromStep1()) {
-      setCurrentStep(2);
       setError(null);
+      if (inputMethod === 'youtube') {
+        try {
+          // Use isGenerating state to show loading spinner on the button
+          setIsGenerating(true);
+          const text = await getTranscript(sourceContent);
+          setTranscript(text);
+          setCurrentStep(2);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Impossible de récupérer la transcription.');
+        } finally {
+          setIsGenerating(false);
+        }
+      } else {
+        setTranscript(null);
+        setCurrentStep(2);
+      }
     } else if (currentStep === 2) {
       setCurrentStep(3);
     }
@@ -107,10 +124,9 @@ const AppContent: React.FC = () => {
     try {
       const config = getConfig();
 
-      // If YouTube, fetch transcript first
       let contentToProcess = config.sourceContent;
-      if (config.inputMethod === 'youtube') {
-        contentToProcess = await getTranscript(config.sourceContent);
+      if (config.inputMethod === 'youtube' && transcript) {
+        contentToProcess = transcript;
       }
 
       // Generate campaign via /api/generate
@@ -135,6 +151,22 @@ const AppContent: React.FC = () => {
           quotes: generatedCampaign.quotes,
         }).select('id').single();
         if (saved?.id) setSavedCampaignId(saved.id);
+
+        // Send email via Brevo
+        try {
+          await fetch('/api/email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: user.email,
+              subject: 'Votre parcours Message+ est prêt 🎉',
+              text: generatedCampaign.days.map((d: any) => `Jour ${d.day}: ${d.theme}\n\nWhatsApp: ${d.whatsapp}\n\nEmail: ${d.email.subject}\n${d.email.body}\n\nRéseaux Sociaux: ${d.social}`).join('\n\n---\n\n')
+            })
+          });
+        } catch (emailErr) {
+          console.error('Erreur lors de l\'envoi de l\'email:', emailErr);
+          // We do not block the UI for email failures
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue lors de la génération');
@@ -224,45 +256,56 @@ const AppContent: React.FC = () => {
           )}
 
           {/* STEP 2: Configuration + Metadata */}
-          {
-            currentStep === 2 && (
-              <div className="step-content fade-in">
-                <div className="card">
-                  <div className="card-header">
-                    <h2 className="card-title">Configuration du parcours</h2>
-                    <p className="card-subtitle">Personnalisez la durée, le ton et ajoutez des informations complémentaires</p>
-                  </div>
-                  <div className="card-body">
-                    <DurationSlider />
-                    <ToneSelector />
-
-                    <div className="section-divider" />
-
-                    <ContentOptionsSelector />
-
-                    <div className="section-divider" />
-
-                    <h3 className="section-heading">Informations complémentaires</h3>
-                    <MetadataInputs />
-
-                    <div className="step-actions">
-                      <button className="btn btn-secondary" onClick={handlePreviousStep}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <polyline points="15 18 9 12 15 6" />
-                        </svg>
-                        Retour
-                      </button>
-                      <button className="btn btn-primary" onClick={handleNextStep}>
-                        Continuer
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <polyline points="9 18 15 12 9 6" />
-                        </svg>
-                      </button>
+          {currentStep === 2 && (
+            <div className="step-content fade-in">
+              {inputMethod === 'youtube' && transcript && (
+                <div className="card" style={{ marginBottom: 'var(--sp-6)' }}>
+                  <details className="transcript-details" style={{ padding: 'var(--sp-4)' }}>
+                    <summary style={{ cursor: 'pointer', fontWeight: 500, color: 'var(--c-text-2)' }}>
+                      Voir la transcription récupérée de la vidéo
+                    </summary>
+                    <div style={{ marginTop: 'var(--sp-4)', fontSize: '13px', color: 'var(--c-text-2)', maxHeight: '300px', overflowY: 'auto', whiteSpace: 'pre-wrap' }}>
+                      {transcript}
                     </div>
+                  </details>
+                </div>
+              )}
+              <div className="card">
+                <div className="card-header">
+                  <h2 className="card-title">Configuration du parcours</h2>
+                  <p className="card-subtitle">Personnalisez la durée, le ton et ajoutez des informations complémentaires</p>
+                </div>
+                <div className="card-body">
+                  <DurationSlider />
+                  <ToneSelector />
+
+                  <div className="section-divider" />
+
+                  <ContentOptionsSelector />
+
+                  <div className="section-divider" />
+
+                  <h3 className="section-heading">Informations complémentaires</h3>
+                  <MetadataInputs />
+
+                  <div className="step-actions">
+                    <button className="btn btn-secondary" onClick={handlePreviousStep}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="15 18 9 12 15 6" />
+                      </svg>
+                      Retour
+                    </button>
+                    <button className="btn btn-primary" onClick={handleNextStep}>
+                      Continuer
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </div>
-            )
+            </div>
+          )
           }
 
           {/* STEP 3: Email + Generation */}
