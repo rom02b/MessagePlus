@@ -337,12 +337,16 @@ const AppContent: React.FC = () => {
                             {getConfig().confession === 'protestant' ? 'Protestant' : 'Catholique'}
                           </span>
                         </div>
-                        {getConfig().messageTitle && (
-                          <div className="summary-item">
-                            <span className="summary-label">Titre</span>
-                            <span className="summary-value">{getConfig().messageTitle}</span>
-                          </div>
-                        )}
+                        <div className="summary-item">
+                          <span className="summary-label">Titre</span>
+                          <span className="summary-value">
+                            {getConfig().messageTitle ? (
+                              getConfig().messageTitle
+                            ) : (
+                              <span style={{ fontStyle: 'italic', color: 'var(--c-text-2)' }}>Sera généré automatiquement</span>
+                            )}
+                          </span>
+                        </div>
                         {getConfig().speakerName && (
                           <div className="summary-item">
                             <span className="summary-label">Orateur</span>
@@ -406,6 +410,7 @@ const AppContent: React.FC = () => {
               <div className="results-section fade-in">
                 <div className="results-header">
                   <h2>Votre parcours Message+ est prêt ! 🎉</h2>
+                  {campaign.messageTitle && <h3 style={{ marginTop: '0.5rem', marginBottom: '1rem', color: 'var(--c-primary)', fontSize: '1.5rem' }}>{campaign.messageTitle}</h3>}
                   <p>Voici les {campaign.days.length} jours de contenu généré pour votre communauté.</p>
                   {userEmail && (
                     <p className="email-sent-notice">

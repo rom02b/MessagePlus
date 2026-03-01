@@ -32,7 +32,7 @@ export const generateCampaign = async (config: CampaignConfig): Promise<Campaign
     throw new Error(message);
   }
 
-  const { days, quotes } = await response.json() as { days: DayContent[]; quotes: string[] };
+  const { title, days, quotes } = await response.json() as { title?: string, days: DayContent[]; quotes: string[] };
 
   return {
     id: crypto.randomUUID(),
@@ -42,7 +42,7 @@ export const generateCampaign = async (config: CampaignConfig): Promise<Campaign
     duration: config.duration,
     tone: config.tone,
     contentOptions: config.contentOptions,
-    messageTitle: config.messageTitle,
+    messageTitle: config.messageTitle || title,
     speakerName: config.speakerName,
     userEmail: config.userEmail,
     days,

@@ -97,6 +97,7 @@ ${speakerName ? `## ORATEUR / PRÉDICATEUR : ${speakerName}` : ''}
 Retourne UNIQUEMENT un objet JSON valide, sans markdown, sans balises \`\`\`json, sans commentaires.
 Structure exacte :
 {
+  "title": "Titre accrocheur généré pour ce parcours (maximum 50 caractères)",
   "quotes": [
     "Citation forte extraite mot pour mot ou paraphrasée du message — idéale pour un visuel Instagram",
     "Deuxième citation impactante du message",
@@ -190,7 +191,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const text = result.response.text();
 
         // Parse and validate JSON
-        let parsed: { quotes?: string[]; days?: unknown[] };
+        let parsed: { title?: string; quotes?: string[]; days?: unknown[] };
         try {
             parsed = JSON.parse(text);
         } catch {
@@ -202,6 +203,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             parsed = JSON.parse(jsonMatch[0]);
         }
 
+        const title = parsed.title;
         const days = parsed.days;
         const quotes = parsed.quotes ?? [];
 
@@ -209,7 +211,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             throw new Error('Format de réponse inattendu de l\'IA.');
         }
 
-        return res.status(200).json({ days, quotes });
+        return res.status(200).json({ title, days, quotes });
 
     } catch (error: unknown) {
         console.error('[/api/generate] Error:', error);
