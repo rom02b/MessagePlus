@@ -182,15 +182,13 @@
     flex-shrink: 0;
 }
 
-.email-body {
-    font-size: var(--fs-xs);
-    color: var(--c-text-2);
-    line-height: 1.6;
-    padding: var(--sp-4);
-    background: var(--c-surface-2);
+.email-iframe {
+    width: 100%;
+    height: 280px;
+    border: none;
     border-radius: var(--r-md);
-    max-height: 200px;
-    overflow-y: auto;
+    background: var(--c-surface-2);
+    display: block;
 }
 
 /* ── Copy Button ── */

@@ -46,7 +46,12 @@ const DayCard: React.FC<DayCardProps> = ({ dayContent }) => {
                         <div className="email-subject">
                             <strong>Sujet</strong> {dayContent.email.subject}
                         </div>
-                        <div className="email-body" dangerouslySetInnerHTML={{ __html: dayContent.email.body }} />
+                        <iframe
+                            className="email-iframe"
+                            srcDoc={dayContent.email.body}
+                            title="Aperçu email"
+                            sandbox="allow-same-origin"
+                        />
                     </div>
                 );
             case 'social':
