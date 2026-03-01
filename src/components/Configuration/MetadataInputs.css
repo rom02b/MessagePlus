@@ -1,0 +1,17 @@
+.metadata-inputs {
+    background-color: var(--color-background);
+    padding: var(--spacing-lg);
+    border-radius: 16px;
+    margin-bottom: var(--spacing-lg);
+}
+
+.metadata-inputs .form-group:last-child {
+    margin-bottom: 0;
+}
+
+.input-hint {
+    margin-top: var(--spacing-xs);
+    font-size: 0.875rem;
+    color: rgba(0, 0, 0, 0.5);
+    font-weight: 400;
+}

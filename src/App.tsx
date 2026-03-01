@@ -1,0 +1,308 @@
+import React from 'react';
+import { CampaignProvider, useCampaign } from './contexts/CampaignContext';
+import Header from './components/Layout/Header';
+import Container from './components/Layout/Container';
+import Stepper from './components/Stepper/Stepper';
+import InputToggle from './components/Input/InputToggle';
+import YouTubeInput from './components/Input/YouTubeInput';
+import TextInput from './components/Input/TextInput';
+import ConfessionSelector from './components/Configuration/ConfessionSelector';
+import DurationSlider from './components/Configuration/DurationSlider';
+import ToneSelector from './components/Configuration/ToneSelector';
+import MetadataInputs from './components/Configuration/MetadataInputs';
+import EmailInput from './components/Configuration/EmailInput';
+import DayCard from './components/Results/DayCard';
+import { generateCampaign } from './services/aiService';
+import { getTranscript, isValidYouTubeUrl } from './services/youtubeService';
+import './App.css';
+
+const AppContent: React.FC = () => {
+  const {
+    inputMethod,
+    sourceContent,
+    currentStep,
+    setCurrentStep,
+    campaign,
+    setCampaign,
+    isGenerating,
+    setIsGenerating,
+    error,
+    setError,
+    getConfig,
+    resetCampaign,
+    userEmail,
+  } = useCampaign();
+
+  const canProceedFromStep1 = () => {
+    if (!sourceContent) return false;
+    if (inputMethod === 'youtube') {
+      return isValidYouTubeUrl(sourceContent);
+    }
+    return sourceContent.length >= 100;
+  };
+
+  const handleNextStep = () => {
+    if (currentStep === 1 && canProceedFromStep1()) {
+      setCurrentStep(2);
+      setError(null);
+    } else if (currentStep === 2) {
+      setCurrentStep(3);
+    }
+  };
+
+  const handlePreviousStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+      setError(null);
+    }
+  };
+
+  const handleGenerate = async () => {
+    setIsGenerating(true);
+    setError(null);
+
+    try {
+      const config = getConfig();
+
+      // If YouTube, fetch transcript first
+      let contentToProcess = config.sourceContent;
+      if (config.inputMethod === 'youtube') {
+        contentToProcess = await getTranscript(config.sourceContent);
+      }
+
+      // Generate campaign
+      const generatedCampaign = await generateCampaign({
+        ...config,
+        sourceContent: contentToProcess,
+      });
+
+      setCampaign(generatedCampaign);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue lors de la génération');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleNewCampaign = () => {
+    resetCampaign();
+  };
+
+  return (
+    <div className="app">
+      <Header />
+      <Container>
+        <Stepper />
+
+        {/* STEP 1: Source + Confession */}
+        {currentStep === 1 && (
+          <div className="step-content fade-in">
+            <div className="card">
+              <div className="card-header">
+                <h2 className="card-title">Source de la prédication</h2>
+                <p className="card-subtitle">Importez votre message depuis YouTube ou collez le texte directement</p>
+              </div>
+              <div className="card-body">
+                <InputToggle />
+                {inputMethod === 'youtube' ? <YouTubeInput /> : <TextInput />}
+
+                <div className="section-divider" />
+
+                <ConfessionSelector />
+
+                {error && (
+                  <div className="error-message">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    {error}
+                  </div>
+                )}
+
+                <div className="step-actions">
+                  <button
+                    className="btn btn-primary"
+                    onClick={handleNextStep}
+                    disabled={!canProceedFromStep1()}
+                  >
+                    Continuer
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 2: Configuration + Metadata */}
+        {currentStep === 2 && (
+          <div className="step-content fade-in">
+            <div className="card">
+              <div className="card-header">
+                <h2 className="card-title">Configuration du parcours</h2>
+                <p className="card-subtitle">Personnalisez la durée, le ton et ajoutez des informations complémentaires</p>
+              </div>
+              <div className="card-body">
+                <DurationSlider />
+                <ToneSelector />
+
+                <div className="section-divider" />
+
+                <h3 className="section-heading">Informations complémentaires</h3>
+                <MetadataInputs />
+
+                <div className="step-actions">
+                  <button className="btn btn-secondary" onClick={handlePreviousStep}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    Retour
+                  </button>
+                  <button className="btn btn-primary" onClick={handleNextStep}>
+                    Continuer
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3: Email + Generation */}
+        {currentStep === 3 && !campaign && (
+          <div className="step-content fade-in">
+            <div className="card">
+              <div className="card-header">
+                <h2 className="card-title">Génération du parcours</h2>
+                <p className="card-subtitle">Vérifiez les paramètres et lancez la génération</p>
+              </div>
+              <div className="card-body">
+                <div className="generation-summary">
+                  <h3>Récapitulatif</h3>
+                  <div className="summary-grid">
+                    <div className="summary-item">
+                      <span className="summary-label">Source</span>
+                      <span className="summary-value">
+                        {inputMethod === 'youtube' ? 'Vidéo YouTube' : 'Texte'}
+                      </span>
+                    </div>
+                    <div className="summary-item">
+                      <span className="summary-label">Durée</span>
+                      <span className="summary-value">{getConfig().duration} jours</span>
+                    </div>
+                    <div className="summary-item">
+                      <span className="summary-label">Confession</span>
+                      <span className="summary-value">
+                        {getConfig().confession === 'protestant' ? 'Protestant' : 'Catholique'}
+                      </span>
+                    </div>
+                    {getConfig().messageTitle && (
+                      <div className="summary-item">
+                        <span className="summary-label">Titre</span>
+                        <span className="summary-value">{getConfig().messageTitle}</span>
+                      </div>
+                    )}
+                    {getConfig().speakerName && (
+                      <div className="summary-item">
+                        <span className="summary-label">Orateur</span>
+                        <span className="summary-value">{getConfig().speakerName}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="section-divider" />
+
+                <EmailInput />
+
+                {error && (
+                  <div className="error-message">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    {error}
+                  </div>
+                )}
+
+                <div className="step-actions">
+                  <button className="btn btn-secondary" onClick={handlePreviousStep} disabled={isGenerating}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    Retour
+                  </button>
+                  <button
+                    className="btn btn-primary btn-generate"
+                    onClick={handleGenerate}
+                    disabled={isGenerating}
+                  >
+                    {isGenerating ? (
+                      <>
+                        <div className="spinner" />
+                        Génération en cours...
+                      </>
+                    ) : (
+                      <>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                        </svg>
+                        Générer le parcours
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* RESULTS */}
+        {campaign && (
+          <div className="results-section fade-in">
+            <div className="results-header">
+              <h2>Votre parcours Message+ est prêt ! 🎉</h2>
+              <p>Voici les {campaign.days.length} jours de contenu généré pour votre communauté.</p>
+              {userEmail && (
+                <p className="email-sent-notice">
+                  📧 Une copie a été envoyée à {userEmail}
+                </p>
+              )}
+            </div>
+
+            {campaign.days.map((day) => (
+              <DayCard key={day.day} dayContent={day} />
+            ))}
+
+            <div className="results-actions">
+              <button className="btn btn-primary" onClick={handleNewCampaign}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="1 4 1 10 7 10" />
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                </svg>
+                Créer un nouveau parcours
+              </button>
+            </div>
+          </div>
+        )}
+      </Container>
+    </div>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <CampaignProvider>
+      <AppContent />
+    </CampaignProvider>
+  );
+};
+
+export default App;

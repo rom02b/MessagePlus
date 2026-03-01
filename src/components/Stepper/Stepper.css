@@ -1,0 +1,104 @@
+.stepper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--spacing-xl);
+    padding: var(--spacing-lg) 0;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.step-number {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: var(--color-white);
+    border: 2px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+    transition: all var(--transition-base);
+}
+
+.step.active .step-number {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    box-shadow: var(--shadow-md);
+}
+
+.step.completed .step-number {
+    border-color: var(--color-success);
+    background-color: var(--color-success);
+    color: var(--color-white);
+}
+
+.step-number svg {
+    width: 24px;
+    height: 24px;
+}
+
+.step-label {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    text-align: center;
+    transition: color var(--transition-base);
+}
+
+.step.active .step-label {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.step.completed .step-label {
+    color: var(--color-success);
+}
+
+.step-connector {
+    width: 80px;
+    height: 2px;
+    background-color: var(--color-border);
+    margin: 0 var(--spacing-sm);
+    margin-bottom: 28px;
+    transition: background-color var(--transition-base);
+}
+
+.step-connector.completed {
+    background-color: var(--color-success);
+}
+
+@media (max-width: 768px) {
+    .stepper {
+        padding: var(--spacing-md) 0;
+    }
+
+    .step-number {
+        width: 40px;
+        height: 40px;
+        font-size: var(--font-size-base);
+    }
+
+    .step-number svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .step-label {
+        font-size: 0.75rem;
+    }
+
+    .step-connector {
+        width: 40px;
+        margin: 0 var(--spacing-xs);
+        margin-bottom: 24px;
+    }
+}
