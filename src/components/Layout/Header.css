@@ -83,7 +83,7 @@
 .header-tagline-block p {
     font-size: var(--fs-base);
     color: var(--c-text-2);
-    max-width: 420px;
+    max-width: 640px;
     margin: 0;
 }
 
