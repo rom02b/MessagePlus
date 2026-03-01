@@ -141,7 +141,7 @@ const AppContent: React.FC = () => {
       if (user) {
         const { data: saved } = await supabase.from('campaigns').insert({
           user_id: user.id,
-          title: config.messageTitle || null,
+          title: generatedCampaign.messageTitle || config.messageTitle || null,
           speaker_name: config.speakerName || null,
           confession: config.confession,
           duration: config.duration,
