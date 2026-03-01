@@ -3,7 +3,7 @@
     background: var(--gradient-top);
     padding: var(--sp-16) 0 5rem;
     position: relative;
-    overflow: hidden;
+    z-index: 10;
 }
 
 /* subtle dot grid texture */
