@@ -1,0 +1,149 @@
+/* ── History Panel ── */
+.history-panel {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-xl);
+    padding: var(--sp-5) var(--sp-6);
+    margin-bottom: var(--sp-6);
+    box-shadow: var(--sh-sm);
+}
+
+.history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--sp-4);
+}
+
+.history-count {
+    font-size: var(--fs-xs);
+    font-weight: 500;
+    color: var(--c-text-3);
+    background: var(--c-surface-2);
+    padding: 3px 10px;
+    border-radius: var(--r-full);
+    border: 1px solid var(--c-border);
+}
+
+/* ── Loading ── */
+.history-loading {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    font-size: var(--fs-sm);
+    color: var(--c-text-3);
+    padding: var(--sp-4) 0;
+}
+
+.history-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--c-border-md);
+    border-top-color: var(--c-text-2);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+/* ── List ── */
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    border-radius: var(--r-md);
+    transition: background var(--dur-fast) var(--ease-out);
+}
+
+.history-item:hover {
+    background: var(--c-surface-2);
+}
+
+.history-item-main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-4);
+    padding: var(--sp-3) var(--sp-3);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-family: var(--font-body);
+    border-radius: var(--r-md);
+    transition: none;
+}
+
+.history-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.history-item-title {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--c-text);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.history-item-meta {
+    font-size: var(--fs-xs);
+    color: var(--c-text-3);
+    white-space: nowrap;
+}
+
+.history-item-date {
+    font-size: var(--fs-xs);
+    color: var(--c-text-3);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* ── Delete ── */
+.history-delete-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--r-sm);
+    background: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--c-text-3);
+    flex-shrink: 0;
+    transition: all var(--dur-fast) var(--ease-out);
+    margin-right: var(--sp-2);
+}
+
+.history-delete-btn:hover {
+    background: #fee2e2;
+    color: var(--c-error);
+}
+
+.history-delete-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.history-delete-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+    .history-item-date {
+        display: none;
+    }
+}

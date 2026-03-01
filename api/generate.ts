@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { createClient } from '@supabase/supabase-js';
 
 // ── Types (mirrored from frontend) ─────────────────────────────────────────
 type Confession = 'protestant' | 'catholic';
@@ -127,6 +128,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    // ── JWT verification (Supabase) ───────────────────────────────────────
+    // SUPABASE_URL and SUPABASE_SERVICE_KEY are server-only env vars (no VITE_ prefix)
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
+
+    if (supabaseUrl && supabaseServiceKey) {
+        const authHeader = req.headers['authorization'] || '';
+        const token = authHeader.replace(/^Bearer\s+/i, '');
+
+        if (!token) {
+            return res.status(401).json({ error: 'Authentification requise. Connectez-vous pour générer du contenu.' });
+        }
+
+        const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+        const { error: authError } = await adminClient.auth.getUser(token);
+
+        if (authError) {
+            return res.status(401).json({ error: 'Session expirée. Veuillez vous reconnecter.' });
+        }
     }
 
     // API key — server-side only, never sent to the browser

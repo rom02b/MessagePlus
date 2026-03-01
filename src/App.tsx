@@ -1,5 +1,6 @@
 import React from 'react';
 import { CampaignProvider, useCampaign } from './contexts/CampaignContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Header from './components/Layout/Header';
 import Footer from './components/Layout/Footer';
 import Container from './components/Layout/Container';
@@ -14,11 +15,15 @@ import ContentOptionsSelector from './components/Configuration/ContentOptions';
 import MetadataInputs from './components/Configuration/MetadataInputs';
 import EmailInput from './components/Configuration/EmailInput';
 import DayCard from './components/Results/DayCard';
+import HistoryPanel from './components/History/HistoryPanel';
+import type { SavedCampaign } from './components/History/HistoryPanel';
 import { generateCampaign } from './services/aiService';
 import { getTranscript, isValidYouTubeUrl } from './services/youtubeService';
+import { supabase } from './lib/supabase';
 import './App.css';
 
 const AppContent: React.FC = () => {
+  const { user } = useAuth();
   const {
     inputMethod,
     sourceContent,
@@ -72,13 +77,27 @@ const AppContent: React.FC = () => {
         contentToProcess = await getTranscript(config.sourceContent);
       }
 
-      // Generate campaign
+      // Generate campaign via /api/generate
       const generatedCampaign = await generateCampaign({
         ...config,
         sourceContent: contentToProcess,
       });
 
       setCampaign(generatedCampaign);
+
+      // Save to Supabase if user is logged in
+      if (user) {
+        await supabase.from('campaigns').insert({
+          user_id: user.id,
+          title: config.messageTitle || null,
+          speaker_name: config.speakerName || null,
+          confession: config.confession,
+          duration: config.duration,
+          tone: config.tone,
+          content_options: config.contentOptions,
+          days: generatedCampaign.days,
+        });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue lors de la génération');
     } finally {
@@ -90,11 +109,35 @@ const AppContent: React.FC = () => {
     resetCampaign();
   };
 
+  // Reload a saved campaign from history
+  const handleReloadFromHistory = (saved: SavedCampaign) => {
+    const reloaded = {
+      id: saved.id,
+      inputMethod: 'text' as const,
+      sourceContent: '',
+      confession: saved.confession as 'protestant' | 'catholic',
+      duration: saved.duration,
+      tone: saved.tone as 'warm-encouraging' | 'reflective' | 'challenging' | 'pastoral' | 'contemplative',
+      contentOptions: saved.content_options as import('./types/campaign').ContentOptions,
+      messageTitle: saved.title ?? undefined,
+      speakerName: saved.speaker_name ?? undefined,
+      days: saved.days as import('./types/campaign').DayContent[],
+      createdAt: new Date(saved.created_at),
+    };
+    setCampaign(reloaded);
+    setCurrentStep(3);
+  };
+
   return (
     <div className="app">
       <Header />
       <Container>
         <Stepper />
+
+        {/* History panel — visible only when logged in (step 1) */}
+        {currentStep === 1 && (
+          <HistoryPanel onReload={handleReloadFromHistory} />
+        )}
 
         {/* STEP 1: Source + Confession */}
         {currentStep === 1 && (
@@ -306,9 +349,11 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <CampaignProvider>
-      <AppContent />
-    </CampaignProvider>
+    <AuthProvider>
+      <CampaignProvider>
+        <AppContent />
+      </CampaignProvider>
+    </AuthProvider>
   );
 };
 
