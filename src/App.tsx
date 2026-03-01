@@ -196,6 +196,7 @@ const AppContent: React.FC = () => {
       createdAt: new Date(saved.created_at),
     };
     setCampaign(reloaded);
+    setSavedCampaignId(saved.id);
     setCurrentStep(3);
   };
 
