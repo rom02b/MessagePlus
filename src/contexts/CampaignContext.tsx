@@ -1,6 +1,13 @@
 import React, { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
-import type { Campaign, CampaignConfig, InputMethod, Confession, Tone } from '../types/campaign';
+import type { Campaign, CampaignConfig, InputMethod, Confession, Tone, ContentOptions } from '../types/campaign';
+
+const DEFAULT_CONTENT_OPTIONS: ContentOptions = {
+    useEmojis: false,
+    messageLength: 'medium',
+    includeReflectionQuestion: true,
+    includeHashtags: true,
+};
 
 interface CampaignContextType {
     // Input state
@@ -16,6 +23,8 @@ interface CampaignContextType {
     setDuration: (duration: number) => void;
     tone: Tone;
     setTone: (tone: Tone) => void;
+    contentOptions: ContentOptions;
+    setContentOptions: (options: ContentOptions) => void;
 
     // Metadata
     messageTitle: string;
@@ -65,6 +74,7 @@ export const CampaignProvider: React.FC<CampaignProviderProps> = ({ children }) 
     const [confession, setConfession] = useState<Confession>('protestant');
     const [duration, setDuration] = useState(3);
     const [tone, setTone] = useState<Tone>('warm-encouraging');
+    const [contentOptions, setContentOptions] = useState<ContentOptions>(DEFAULT_CONTENT_OPTIONS);
 
     // Metadata
     const [messageTitle, setMessageTitle] = useState('');
@@ -92,6 +102,7 @@ export const CampaignProvider: React.FC<CampaignProviderProps> = ({ children }) 
         confession,
         duration,
         tone,
+        contentOptions,
         messageTitle,
         speakerName,
         userEmail,
@@ -108,6 +119,8 @@ export const CampaignProvider: React.FC<CampaignProviderProps> = ({ children }) 
         setDuration,
         tone,
         setTone,
+        contentOptions,
+        setContentOptions,
         campaign,
         setCampaign,
         currentStep,

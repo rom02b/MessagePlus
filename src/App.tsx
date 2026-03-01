@@ -9,6 +9,7 @@ import TextInput from './components/Input/TextInput';
 import ConfessionSelector from './components/Configuration/ConfessionSelector';
 import DurationSlider from './components/Configuration/DurationSlider';
 import ToneSelector from './components/Configuration/ToneSelector';
+import ContentOptionsSelector from './components/Configuration/ContentOptions';
 import MetadataInputs from './components/Configuration/MetadataInputs';
 import EmailInput from './components/Configuration/EmailInput';
 import DayCard from './components/Results/DayCard';
@@ -149,6 +150,10 @@ const AppContent: React.FC = () => {
               <div className="card-body">
                 <DurationSlider />
                 <ToneSelector />
+
+                <div className="section-divider" />
+
+                <ContentOptionsSelector />
 
                 <div className="section-divider" />
 

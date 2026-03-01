@@ -9,6 +9,15 @@ export type Tone =
   | 'pastoral'
   | 'contemplative';
 
+export type MessageLength = 'short' | 'medium' | 'long';
+
+export interface ContentOptions {
+  useEmojis: boolean;
+  messageLength: MessageLength;
+  includeReflectionQuestion: boolean;
+  includeHashtags: boolean;
+}
+
 export interface DayContent {
   day: number;
   theme: string;
@@ -31,9 +40,10 @@ export interface Campaign {
   confession: Confession;
   duration: number; // 2-6 days
   tone: Tone;
-  messageTitle?: string; // Title of the sermon/message
-  speakerName?: string; // Name of the preacher/speaker
-  userEmail?: string; // Optional email for receiving the campaign
+  contentOptions: ContentOptions;
+  messageTitle?: string;
+  speakerName?: string;
+  userEmail?: string;
   days: DayContent[];
   createdAt: Date;
 }
@@ -44,6 +54,7 @@ export interface CampaignConfig {
   confession: Confession;
   duration: number;
   tone: Tone;
+  contentOptions: ContentOptions;
   messageTitle?: string;
   speakerName?: string;
   userEmail?: string;

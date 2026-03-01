@@ -1,0 +1,156 @@
+/* ── Content Options ── */
+.content-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-6);
+}
+
+.content-options-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+}
+
+/* ── Length Selector ── */
+.length-selector {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-2);
+}
+
+.length-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: var(--sp-3) var(--sp-2);
+    background: var(--c-surface-2);
+    border: 1.5px solid var(--c-border);
+    border-radius: var(--r-md);
+    cursor: pointer;
+    font-family: var(--font-body);
+    text-align: center;
+    transition: all var(--dur-base) var(--ease-out);
+}
+
+.length-btn:hover {
+    border-color: rgba(0, 0, 0, 0.18);
+    background: var(--c-surface);
+    box-shadow: var(--sh-xs);
+}
+
+.length-btn.selected {
+    background: var(--c-black);
+    border-color: var(--c-black);
+    box-shadow: 0 2px 10px rgba(15, 15, 16, 0.2);
+}
+
+.length-label {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--c-text);
+    letter-spacing: -0.01em;
+    transition: color var(--dur-fast) var(--ease-out);
+}
+
+.length-btn.selected .length-label {
+    color: var(--c-white);
+}
+
+.length-desc {
+    font-size: var(--fs-xs);
+    color: var(--c-text-3);
+    font-weight: 400;
+    transition: color var(--dur-fast) var(--ease-out);
+}
+
+.length-btn.selected .length-desc {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* ── Toggle Options ── */
+.toggle-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+}
+
+.toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-4);
+    padding: var(--sp-4) var(--sp-4);
+    border-radius: var(--r-md);
+    cursor: pointer;
+    transition: background var(--dur-fast) var(--ease-out);
+    border: 1px solid transparent;
+}
+
+.toggle-row:hover {
+    background: var(--c-surface-2);
+    border-color: var(--c-border);
+}
+
+.toggle-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+    min-width: 0;
+}
+
+.toggle-label {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--c-text);
+    letter-spacing: -0.01em;
+}
+
+.toggle-desc {
+    font-size: var(--fs-xs);
+    color: var(--c-text-3);
+    line-height: 1.4;
+}
+
+/* ── Toggle Switch ── */
+.toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 26px;
+    border-radius: var(--r-full);
+    background: var(--c-border-md);
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    transition: background var(--dur-base) var(--ease-out);
+}
+
+.toggle-switch.on {
+    background: var(--c-black);
+}
+
+.toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--c-white);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
+}
+
+.toggle-switch.on .toggle-thumb {
+    transform: translateX(18px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+    .length-label {
+        font-size: var(--fs-xs);
+    }
+}

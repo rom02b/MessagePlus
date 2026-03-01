@@ -5,8 +5,7 @@ export const generateCampaign = async (config: CampaignConfig): Promise<Campaign
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 2000));
 
-  // Generate mock content based on duration
-  const days: DayContent[] = [];
+  const { contentOptions } = config;
 
   const mockThemes = [
     'La foi qui transforme',
@@ -26,6 +25,8 @@ export const generateCampaign = async (config: CampaignConfig): Promise<Campaign
     { reference: 'Éphésiens 2:8', text: 'C\'est par la grâce que vous êtes sauvés, par le moyen de la foi.' },
   ];
 
+  const days: DayContent[] = [];
+
   for (let i = 0; i < config.duration; i++) {
     const theme = mockThemes[i];
     const verse = mockVerses[i];
@@ -34,9 +35,9 @@ export const generateCampaign = async (config: CampaignConfig): Promise<Campaign
       day: i + 1,
       theme,
       verse,
-      whatsapp: generateWhatsAppMessage(theme, verse, config.tone, config.confession),
-      email: generateEmailContent(theme, verse, config.tone, config.confession),
-      social: generateSocialContent(theme, verse, config.tone),
+      whatsapp: generateWhatsAppMessage(theme, verse, config.tone, config.confession, contentOptions),
+      email: generateEmailContent(theme, verse, config.confession, contentOptions),
+      social: generateSocialContent(theme, verse, contentOptions),
     });
   }
 
@@ -47,95 +48,149 @@ export const generateCampaign = async (config: CampaignConfig): Promise<Campaign
     confession: config.confession,
     duration: config.duration,
     tone: config.tone,
+    contentOptions,
     days,
     createdAt: new Date(),
   };
 };
 
-const generateWhatsAppMessage = (theme: string, verse: any, tone: string, confession: string): string => {
-  const greeting = tone === 'warm-encouraging' ? '🙏 Bonjour cher(e) ami(e),' : '✝️ Paix et grâce,';
-  const closing = confession === 'protestant' ? 'Que Dieu vous bénisse !' : 'Que le Seigneur soit avec vous !';
+// ── Helpers ──────────────────────────────────────────────────────────────
 
-  return `${greeting}
+const e = (emoji: string, useEmojis: boolean) => useEmojis ? emoji + ' ' : '';
 
-📖 *${theme}*
+const reflectionSentence = (useEmojis: boolean) =>
+  `${e('💭', useEmojis)}Réflexion du jour :\nPrenez un moment aujourd'hui pour méditer sur cette parole. Comment Dieu vous parle-t-il à travers ce verset ?`;
 
-"${verse.text}" - ${verse.reference}
+const reflectionQuestion = (useEmojis: boolean) =>
+  `${e('💭', useEmojis)}Et vous, comment vivez-vous cette parole aujourd'hui ?`;
 
-💭 Réflexion du jour :
-Prenez un moment aujourd'hui pour méditer sur cette parole. Comment Dieu vous parle-t-il à travers ce verset ?
+const prayerBlock = (_confession: string, useEmojis: boolean) =>
+  `${e('🙏', useEmojis)}Prière :\nSeigneur, ouvre mon cœur à ta Parole. Aide-moi à vivre selon ta volonté aujourd'hui.`;
 
-🙏 Prière :
-Seigneur, ouvre mon cœur à ta Parole. Aide-moi à vivre selon ta volonté aujourd'hui.
+const hashtagsBlock = () =>
+  `\n#Foi #Spiritualité #Méditation #Bible #Inspiration`;
 
-${closing}`;
+// ── WhatsApp ──────────────────────────────────────────────────────────────
+
+const generateWhatsAppMessage = (
+  theme: string,
+  verse: { reference: string; text: string },
+  tone: string,
+  confession: string,
+  opts: import('../types/campaign').ContentOptions,
+): string => {
+  const { useEmojis, messageLength, includeReflectionQuestion } = opts;
+
+  const greeting = tone === 'warm-encouraging'
+    ? `${e('🙏', useEmojis)}Bonjour cher(e) ami(e),`
+    : `${e('✝️', useEmojis)}Paix et grâce,`;
+
+  const closing = confession === 'protestant'
+    ? `Que Dieu vous bénisse !`
+    : `Que le Seigneur soit avec vous !`;
+
+  const verseBlock = `${e('📖', useEmojis)}*${theme}*\n\n"${verse.text}" - ${verse.reference}`;
+
+  if (messageLength === 'short') {
+    return `${greeting}\n\n${verseBlock}\n\n${closing}`;
+  }
+
+  const reflection = includeReflectionQuestion
+    ? `\n\n${reflectionSentence(useEmojis)}`
+    : '';
+
+  if (messageLength === 'medium') {
+    return `${greeting}\n\n${verseBlock}${reflection}\n\n${closing}`;
+  }
+
+  // long
+  const prayer = `\n\n${prayerBlock(confession, useEmojis)}`;
+  return `${greeting}\n\n${verseBlock}${reflection}${prayer}\n\n${closing}`;
 };
 
-const generateEmailContent = (theme: string, verse: any, _tone: string, _confession: string): { subject: string; body: string } => {
-  const subject = `Jour de réflexion : ${theme}`;
+// ── Email ──────────────────────────────────────────────────────────────
 
-  const body = `
-<!DOCTYPE html>
+const generateEmailContent = (
+  theme: string,
+  verse: { reference: string; text: string },
+  _confession: string,
+  opts: import('../types/campaign').ContentOptions,
+): { subject: string; body: string } => {
+  const { useEmojis, messageLength, includeReflectionQuestion } = opts;
+  const subject = `${useEmojis ? '✨ ' : ''}Jour de réflexion : ${theme}`;
+
+  const reflectionHtml = includeReflectionQuestion
+    ? `<h3>Réflexion</h3>
+       <p>Cette parole nous invite à approfondir notre relation avec Dieu. Prenez un moment aujourd'hui pour méditer sur ce message et demandez-vous : comment puis-je vivre cette vérité dans ma vie quotidienne ?</p>`
+    : '';
+
+  const furtherHtml = messageLength !== 'short'
+    ? `<h3>Pour aller plus loin</h3>
+       <ul>
+         <li>Relisez ce passage dans son contexte</li>
+         <li>Partagez cette réflexion avec un proche</li>
+         ${messageLength === 'long' ? '<li>Notez ce que Dieu vous dit à travers ce verset</li>' : ''}
+       </ul>`
+    : '';
+
+  const body = `<!DOCTYPE html>
 <html>
 <head>
   <style>
     body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
     .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background: #092040; color: white; padding: 20px; text-align: center; }
+    .header { background: #092040; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
     .content { padding: 20px; background: #f9f9f9; }
-    .verse { background: white; padding: 15px; margin: 20px 0; border-left: 4px solid #e76937; }
-    .footer { text-align: center; padding: 20px; color: #666; }
+    .verse { background: white; padding: 15px; margin: 20px 0; border-left: 4px solid #e76937; border-radius: 0 4px 4px 0; }
+    .footer { text-align: center; padding: 20px; color: #666; font-size: 13px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <h1>${theme}</h1>
-    </div>
+    <div class="header"><h1>${theme}</h1></div>
     <div class="content">
       <div class="verse">
         <p><em>"${verse.text}"</em></p>
         <p><strong>- ${verse.reference}</strong></p>
       </div>
-      
-      <h3>Réflexion</h3>
-      <p>Cette parole nous invite à approfondir notre relation avec Dieu. Prenez un moment aujourd'hui pour méditer sur ce message et demandez-vous : comment puis-je vivre cette vérité dans ma vie quotidienne ?</p>
-      
-      <h3>Pour aller plus loin</h3>
-      <ul>
-        <li>Relisez ce passage dans son contexte</li>
-        <li>Partagez cette réflexion avec un proche</li>
-        <li>Notez ce que Dieu vous dit à travers ce verset</li>
-      </ul>
+      ${reflectionHtml}
+      ${furtherHtml}
     </div>
     <div class="footer">
       <p>Que Dieu vous bénisse dans votre cheminement spirituel.</p>
     </div>
   </div>
 </body>
-</html>
-  `;
+</html>`;
 
   return { subject, body };
 };
 
-const generateSocialContent = (theme: string, verse: any, _tone: string): string => {
-  return `✨ ${theme}
+// ── Social ──────────────────────────────────────────────────────────────
 
-"${verse.text}" - ${verse.reference}
+const generateSocialContent = (
+  theme: string,
+  verse: { reference: string; text: string },
+  opts: import('../types/campaign').ContentOptions,
+): string => {
+  const { useEmojis, includeReflectionQuestion, includeHashtags } = opts;
 
-💭 Et vous, comment vivez-vous cette parole aujourd'hui ?
+  const intro = `${e('✨', useEmojis)}${theme}`;
+  const verseBlock = `"${verse.text}" - ${verse.reference}`;
+  const reflection = includeReflectionQuestion
+    ? `\n\n${reflectionQuestion(useEmojis)}`
+    : '';
+  const hashtags = includeHashtags ? hashtagsBlock() : '';
 
-#Foi #Spiritualité #Méditation #Bible #Inspiration`;
+  return `${intro}\n\n${verseBlock}${reflection}${hashtags}`;
 };
 
-// Extract themes and verses from source content (mock implementation)
+// ── Unused (kept for future real AI integration) ──────────────────────
+
 export const extractThemes = async (_content: string): Promise<string[]> => {
-  // This would use AI to extract key themes
   return ['Foi', 'Amour', 'Espérance', 'Grâce'];
 };
 
 export const extractVerses = async (_content: string): Promise<string[]> => {
-  // This would use AI to identify biblical references
   return ['Jean 3:16', 'Romains 8:28', 'Philippiens 4:13'];
 };
