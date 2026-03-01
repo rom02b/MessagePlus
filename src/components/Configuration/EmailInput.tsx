@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useCampaign } from '../../contexts/CampaignContext';
+import { useAuth } from '../../contexts/AuthContext';
 import './EmailInput.css';
 
 const EmailInput: React.FC = () => {
     const { userEmail, setUserEmail } = useCampaign();
+    const { user } = useAuth();
     const [localError, setLocalError] = useState('');
+
+    // Pre-fill with the connected user's email
+    useEffect(() => {
+        if (user?.email && !userEmail) {
+            setUserEmail(user.email);
+        }
+    }, [user]);
 
     const validateEmail = (email: string): boolean => {
         if (!email) return true; // Email is optional
