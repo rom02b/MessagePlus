@@ -45,6 +45,7 @@ export interface Campaign {
   speakerName?: string;
   userEmail?: string;
   days: DayContent[];
+  quotes: string[];  // 3 key quotes from the sermon
   createdAt: Date;
 }
 

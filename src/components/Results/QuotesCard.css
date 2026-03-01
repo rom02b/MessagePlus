@@ -1,0 +1,129 @@
+/* ── Quotes Card ── */
+.quotes-card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-xl);
+    padding: var(--sp-6);
+    box-shadow: var(--sh-sm);
+    margin-top: var(--sp-5);
+}
+
+.quotes-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sp-4);
+    margin-bottom: var(--sp-5);
+    padding-bottom: var(--sp-5);
+    border-bottom: 1px solid var(--c-border);
+}
+
+.quotes-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--r-md);
+    background: var(--c-accent-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.quotes-icon svg {
+    width: 20px;
+    height: 20px;
+    color: var(--c-accent);
+}
+
+.quotes-title {
+    font-size: var(--fs-xl);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--c-text);
+    margin: 0 0 var(--sp-1);
+}
+
+.quotes-subtitle {
+    font-size: var(--fs-xs);
+    color: var(--c-text-3);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* ── Quote items ── */
+.quotes-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+}
+
+.quote-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sp-3);
+    padding: var(--sp-4);
+    background: var(--c-surface-2);
+    border-radius: var(--r-md);
+    border: 1px solid transparent;
+    transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.quote-item:hover {
+    border-color: var(--c-border-md);
+    background: var(--c-surface);
+}
+
+.quote-number {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--c-navy);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.quote-text {
+    flex: 1;
+    font-size: var(--fs-sm);
+    font-style: italic;
+    color: var(--c-text);
+    line-height: 1.6;
+    margin: 0;
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+}
+
+.quote-copy-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--r-sm);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--c-text-3);
+    flex-shrink: 0;
+    transition: all var(--dur-fast) var(--ease-out);
+}
+
+.quote-copy-btn:hover {
+    background: var(--c-border);
+    color: var(--c-text);
+}
+
+.quote-copy-btn.copied {
+    color: var(--c-success);
+    background: #dcfce7;
+}
+
+.quote-copy-btn svg {
+    width: 14px;
+    height: 14px;
+}

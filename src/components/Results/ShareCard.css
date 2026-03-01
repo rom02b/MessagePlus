@@ -1,0 +1,115 @@
+/* ── Share Card ── */
+.share-card {
+    background: linear-gradient(135deg, #0f2040 0%, #1a3560 100%);
+    border-radius: var(--r-xl);
+    padding: var(--sp-6);
+    margin-top: var(--sp-5);
+    box-shadow: var(--sh-md);
+}
+
+.share-card-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sp-4);
+    margin-bottom: var(--sp-5);
+}
+
+.share-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--r-md);
+    background: rgba(255, 255, 255, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.share-icon svg {
+    width: 20px;
+    height: 20px;
+    color: white;
+}
+
+.share-title {
+    font-size: var(--fs-xl);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: white;
+    margin: 0 0 var(--sp-1);
+}
+
+.share-desc {
+    font-size: var(--fs-sm);
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1.55;
+    margin: 0;
+}
+
+/* ── URL row ── */
+.share-url-row {
+    display: flex;
+    gap: var(--sp-2);
+}
+
+.share-url-input {
+    flex: 1;
+    padding: 11px var(--sp-4);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--r-md);
+    font-family: var(--font-body);
+    font-size: var(--fs-sm);
+    color: rgba(255, 255, 255, 0.9);
+    cursor: text;
+    min-width: 0;
+    outline: none;
+    transition: background var(--dur-fast) var(--ease-out);
+}
+
+.share-url-input:focus,
+.share-url-input:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.share-copy-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: 11px var(--sp-5);
+    background: white;
+    color: var(--c-navy);
+    border: none;
+    border-radius: var(--r-md);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: all var(--dur-fast) var(--ease-out);
+}
+
+.share-copy-btn:hover {
+    background: var(--c-surface-2);
+}
+
+.share-copy-btn.copied {
+    background: #dcfce7;
+    color: var(--c-success);
+}
+
+.share-copy-btn svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+@media (max-width: 560px) {
+    .share-url-row {
+        flex-direction: column;
+    }
+
+    .share-copy-btn {
+        justify-content: center;
+    }
+}

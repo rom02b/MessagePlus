@@ -94,24 +94,31 @@ ${speakerName ? `## ORATEUR / PRÉDICATEUR : ${speakerName}` : ''}
 7. Toute la réponse doit être en FRANÇAIS.
 
 ## FORMAT DE RÉPONSE :
-Retourne UNIQUEMENT un tableau JSON valide, sans markdown, sans balises \`\`\`json, sans commentaires.
+Retourne UNIQUEMENT un objet JSON valide, sans markdown, sans balises \`\`\`json, sans commentaires.
 Structure exacte :
-[
-  {
-    "day": 1,
-    "theme": "Titre du thème du jour",
-    "verse": {
-      "reference": "Livre chapitre:verset",
-      "text": "Texte exact du verset en français (traduction Louis Segond ou Bible en français courant)"
-    },
-    "whatsapp": "Texte complet du message WhatsApp",
-    "email": {
-      "subject": "Objet de l'email",
-      "body": "Corps HTML complet de l'email (inclure balises HTML de base : h1, p, blockquote)"
-    },
-    "social": "Texte complet du post réseaux sociaux"
-  }
-]
+{
+  "quotes": [
+    "Citation forte extraite mot pour mot ou paraphrasée du message — idéale pour un visuel Instagram",
+    "Deuxième citation impactante du message",
+    "Troisième citation mémorable du message"
+  ],
+  "days": [
+    {
+      "day": 1,
+      "theme": "Titre du thème du jour",
+      "verse": {
+        "reference": "Livre chapitre:verset",
+        "text": "Texte exact du verset en français (traduction Louis Segond ou Bible en français courant)"
+      },
+      "whatsapp": "Texte complet du message WhatsApp",
+      "email": {
+        "subject": "Objet de l'email",
+        "body": "Corps HTML complet de l'email (inclure balises HTML de base : h1, p, blockquote)"
+      },
+      "social": "Texte complet du post réseaux sociaux"
+    }
+  ]
+}
 `.trim();
 }
 
@@ -183,23 +190,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const text = result.response.text();
 
         // Parse and validate JSON
-        let days;
+        let parsed: { quotes?: string[]; days?: unknown[] };
         try {
-            days = JSON.parse(text);
+            parsed = JSON.parse(text);
         } catch {
-            // Try to extract JSON from response if it has extra text
-            const jsonMatch = text.match(/\[[\s\S]*\]/);
+            // Try to extract JSON object from response if it has extra text
+            const jsonMatch = text.match(/\{[\s\S]*\}/);
             if (!jsonMatch) {
                 throw new Error('La réponse de l\'IA n\'est pas au format JSON attendu.');
             }
-            days = JSON.parse(jsonMatch[0]);
+            parsed = JSON.parse(jsonMatch[0]);
         }
+
+        const days = parsed.days;
+        const quotes = parsed.quotes ?? [];
 
         if (!Array.isArray(days) || days.length === 0) {
             throw new Error('Format de réponse inattendu de l\'IA.');
         }
 
-        return res.status(200).json({ days });
+        return res.status(200).json({ days, quotes });
 
     } catch (error: unknown) {
         console.error('[/api/generate] Error:', error);

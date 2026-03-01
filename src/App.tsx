@@ -17,6 +17,8 @@ import EmailInput from './components/Configuration/EmailInput';
 import DayCard from './components/Results/DayCard';
 import HistoryPanel from './components/History/HistoryPanel';
 import type { SavedCampaign } from './components/History/HistoryPanel';
+import QuotesCard from './components/Results/QuotesCard';
+import ShareCard from './components/Results/ShareCard';
 import { generateCampaign } from './services/aiService';
 import { getTranscript, isValidYouTubeUrl } from './services/youtubeService';
 import { supabase } from './lib/supabase';
@@ -39,6 +41,40 @@ const AppContent: React.FC = () => {
     resetCampaign,
     userEmail,
   } = useCampaign();
+
+  const [savedCampaignId, setSavedCampaignId] = React.useState<string | null>(null);
+
+  // Handle ?share=ID in URL — load shared campaign on mount
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const shareId = params.get('share');
+    if (!shareId) return;
+
+    fetch(`/api/share?id=${shareId}`)
+      .then((r) => r.json())
+      .then(({ campaign: c }) => {
+        if (!c) return;
+        setCampaign({
+          id: c.id,
+          inputMethod: 'text',
+          sourceContent: '',
+          confession: c.confession,
+          duration: c.duration,
+          tone: c.tone,
+          contentOptions: c.content_options,
+          messageTitle: c.title ?? undefined,
+          speakerName: c.speaker_name ?? undefined,
+          days: c.days,
+          quotes: c.quotes ?? [],
+          createdAt: new Date(c.created_at),
+        });
+        setSavedCampaignId(c.id);
+        setCurrentStep(3);
+        // Clean URL without reload
+        window.history.replaceState({}, '', window.location.pathname);
+      })
+      .catch(() => { });
+  }, []);
 
   const canProceedFromStep1 = () => {
     if (!sourceContent) return false;
@@ -87,7 +123,7 @@ const AppContent: React.FC = () => {
 
       // Save to Supabase if user is logged in
       if (user) {
-        await supabase.from('campaigns').insert({
+        const { data: saved } = await supabase.from('campaigns').insert({
           user_id: user.id,
           title: config.messageTitle || null,
           speaker_name: config.speakerName || null,
@@ -96,7 +132,9 @@ const AppContent: React.FC = () => {
           tone: config.tone,
           content_options: config.contentOptions,
           days: generatedCampaign.days,
-        });
+          quotes: generatedCampaign.quotes,
+        }).select('id').single();
+        if (saved?.id) setSavedCampaignId(saved.id);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue lors de la génération');
@@ -122,6 +160,7 @@ const AppContent: React.FC = () => {
       messageTitle: saved.title ?? undefined,
       speakerName: saved.speaker_name ?? undefined,
       days: saved.days as import('./types/campaign').DayContent[],
+      quotes: (saved as unknown as { quotes?: string[] }).quotes ?? [],
       createdAt: new Date(saved.created_at),
     };
     setCampaign(reloaded);
@@ -329,6 +368,16 @@ const AppContent: React.FC = () => {
             {campaign.days.map((day) => (
               <DayCard key={day.day} dayContent={day} />
             ))}
+
+            {/* Bonus: quotes card */}
+            {campaign.quotes && campaign.quotes.length > 0 && (
+              <QuotesCard quotes={campaign.quotes} />
+            )}
+
+            {/* Bonus: share link (only when saved in Supabase) */}
+            {savedCampaignId && (
+              <ShareCard campaignId={savedCampaignId} />
+            )}
 
             <div className="results-actions">
               <button className="btn btn-primary" onClick={handleNewCampaign}>
