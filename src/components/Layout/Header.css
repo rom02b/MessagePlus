@@ -96,8 +96,14 @@
 }
 
 .header-login-btn {
-    padding: 9px 18px;
+    padding: 10px 24px;
     font-size: var(--fs-sm);
+    font-weight: 600;
+}
+
+.header-auth-loading {
+    width: 100px;
+    height: 40px;
 }
 
 .header-history-btn {
