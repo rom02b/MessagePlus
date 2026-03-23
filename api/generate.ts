@@ -254,7 +254,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
 
         const prompt = buildPrompt(config);
-        const result = await model.generateContent(prompt);
+        
+        // --- Exponential Backoff Retry Logic ---
+        let result;
+        let retries = 0;
+        const maxRetries = 3;
+        const baseDelay = 2000;
+
+        while (true) {
+            try {
+                result = await model.generateContent(prompt);
+                break; // success, exit loop
+            } catch (err: any) {
+                const errorMessage = err?.message || String(err);
+                const isRateLimit = errorMessage.includes('429') || 
+                                  errorMessage.includes('Too Many Requests') || 
+                                  errorMessage.includes('Resource exhausted');
+                
+                if (isRateLimit && retries < maxRetries) {
+                    const delay = baseDelay * Math.pow(2, retries);
+                    console.warn(`[Gemini API] 429 Too Many Requests. Retrying in ${delay}ms (Attempt ${retries + 1}/${maxRetries})`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    retries++;
+                } else {
+                    if (isRateLimit) {
+                        throw new Error('Les serveurs Google Gemini sont surchargés (Quota atteint). Le système a tenté plusieurs fois en vain. Veuillez réessayer plus tard.');
+                    }
+                    throw err; // Re-throw other errors immediately
+                }
+            }
+        }
+        
         const text = result.response.text();
 
         // Parse and validate JSON
