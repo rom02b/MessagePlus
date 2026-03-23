@@ -2,6 +2,56 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createClient } from '@supabase/supabase-js';
 
+// ── Brevo Email Sending Helper ─────────────────────────────────────────────
+async function sendNotificationEmail(toEmail: string, title: string | undefined, days: any[]) {
+    const brevoApiKey = process.env.BREVO_API_KEY;
+    if (!brevoApiKey) {
+        console.error('BREVO_API_KEY manquante pour l\'envoi d\'email automatique');
+        return;
+    }
+
+    const textContent = days.map((d: any) => `Jour ${d.day}: ${d.theme}\n\nWhatsApp: ${d.whatsapp}\n\nEmail: ${d.email.subject}\n${d.email.body}\n\nRéseaux Sociaux: ${d.social}`).join('\n\n---\n\n');
+
+    const htmlContent = `
+        <div style="font-family: sans-serif; color: #333;">
+            <h2>Votre parcours Message+ est prêt ! 🎉</h2>
+            ${title ? `<h3>${title}</h3>` : ''}
+            <p>Bonjour,</p>
+            <p>Voici les contenus générés pour votre prédication :</p>
+            <div style="white-space: pre-wrap; margin-top: 20px;">${textContent}</div>
+        </div>
+    `;
+
+    try {
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'api-key': brevoApiKey
+            },
+            body: JSON.stringify({
+                sender: {
+                    name: process.env.BREVO_SENDER_NAME || 'Message+',
+                    email: process.env.BREVO_SENDER_EMAIL || 'rom02b@hotmail.fr'
+                },
+                to: [{ email: toEmail }],
+                subject: 'Votre parcours Message+ est prêt 🎉',
+                htmlContent: htmlContent
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Erreur API Brevo:', errorData);
+        } else {
+            console.log('Email envoyé avec succès à', toEmail);
+        }
+    } catch (error) {
+        console.error('Erreur exceptionnelle lors de l\'envoi:', error);
+    }
+}
+
 // ── Types (mirrored from frontend) ─────────────────────────────────────────
 type Confession = 'protestant' | 'catholic';
 type Tone = 'warm-encouraging' | 'reflective' | 'challenging' | 'pastoral' | 'contemplative';
@@ -22,6 +72,7 @@ interface CampaignConfig {
     contentOptions: ContentOptions;
     messageTitle?: string;
     speakerName?: string;
+    userEmail?: string;
 }
 
 // ── Tone labels ───────────────────────────────────────────────────────────
@@ -227,7 +278,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             throw new Error('Format de réponse inattendu de l\'IA.');
         }
 
-        return res.status(200).json({ title, days, quotes });
+        // --- Envoi de l'email automatique ---
+        let targetEmail = config.userEmail;
+        
+        // Si l'utilisateur est connecté, on privilégie son email Auth
+        if (supabaseUrl && supabaseServiceKey) {
+            const authHeader = req.headers['authorization'] || '';
+            const token = authHeader.replace(/^Bearer\s+/i, '');
+            if (token) {
+                const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+                const { data: { user } } = await adminClient.auth.getUser(token);
+                if (user && user.email) {
+                    targetEmail = user.email; // overwrite with verified DB email
+                }
+            }
+        }
+        
+        if (targetEmail) {
+            // on await pour s'assurer qu'il part avant la fermeture de la function Vercel
+            await sendNotificationEmail(targetEmail, title, days);
+        }
+
+        return res.status(200).json({ title, days, quotes, emailSentTo: targetEmail || null });
 
     } catch (error: unknown) {
         console.error('[/api/generate] Error:', error);

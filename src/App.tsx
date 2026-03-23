@@ -160,29 +160,10 @@ const AppContent: React.FC = () => {
         }
       }
 
-      // ── 2. Send Email (logged in OR guest with email provided) ──────────
-      const targetEmail = userEmail || user?.email;
-      if (targetEmail) {
-        try {
-          const emailResponse = await fetch('/api/email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              email: targetEmail,
-              subject: 'Votre parcours Message+ est prêt 🎉',
-              text: generatedCampaign.days.map((d: any) => `Jour ${d.day}: ${d.theme}\n\nWhatsApp: ${d.whatsapp}\n\nEmail: ${d.email.subject}\n${d.email.body}\n\nRéseaux Sociaux: ${d.social}`).join('\n\n---\n\n')
-            })
-          });
-
-          if (!emailResponse.ok) {
-            const errData = await emailResponse.json();
-            throw new Error(errData.error || 'Erreur lors de l\'envoi de l\'email');
-          }
-          setEmailSuccess(true);
-        } catch (emailErr) {
-          console.error('Email error:', emailErr);
-          setEmailError(emailErr instanceof Error ? emailErr.message : 'Échec de l\'envoi de l\'e-mail');
-        }
+      // ── 2. Send Email Notification (now handled by backend) ──────────
+      // The backend returns userEmail if true
+      if (generatedCampaign.userEmail) {
+        setEmailSuccess(true);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue lors de la génération');
