@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { getAuth } from './_lib/auth';
+import { requireUser } from './_lib/auth';
 import { getDb } from './_lib/db';
 import { campaigns } from '../../api/lib/schema';
 import { eq, gte, and, count } from 'drizzle-orm';
@@ -191,15 +191,13 @@ export const onRequest: PagesFunction = async (context) => {
     }
 
     const db = getDb(env.DATABASE_URL!);
-    const auth = getAuth(env);
-
-    // ── Session verification (Better Auth) ─────────────────────────────────
+    // ── Session verification (Neon Auth JWT) ─────────────────────────────────
     let authenticatedUser: { id: string; email: string } | null = null;
 
     try {
-        const session = await auth.api.getSession({ headers: request.headers });
-        if (session?.user) {
-            authenticatedUser = { id: session.user.id, email: session.user.email };
+        const user = await requireUser(env, request);
+        if (user) {
+            authenticatedUser = { id: user.id, email: user.email };
         }
     } catch {
         // No valid session — allow unauthenticated if no auth is required

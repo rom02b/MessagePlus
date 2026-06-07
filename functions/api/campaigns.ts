@@ -1,5 +1,5 @@
 import { getDb } from './_lib/db';
-import { getAuth } from './_lib/auth';
+import { requireUser } from './_lib/auth';
 import { campaigns } from '../../api/lib/schema';
 import { eq, desc } from 'drizzle-orm';
 
@@ -8,17 +8,16 @@ export const onRequest: PagesFunction = async (context) => {
   const request = context.request;
 
   const db = getDb(env.DATABASE_URL!);
-  const auth = getAuth(env);
-
-  // Auth verification via Better Auth
-  const session = await auth.api.getSession({ headers: request.headers });
-  if (!session?.user) {
+  
+  // Auth verification via Neon Auth JWT
+  const user = await requireUser(env, request);
+  if (!user) {
     return new Response(JSON.stringify({ error: 'Authentification requise.' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
     });
   }
-  const userId = session.user.id;
+  const userId = user.id;
 
   if (request.method === 'GET') {
     try {
