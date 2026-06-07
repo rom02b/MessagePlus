@@ -1,4 +1,4 @@
-import { neon } from '@neondatabase/serverless';
+import { createAuthClient } from '@neondatabase/auth';
 
 export async function requireUser(env: Record<string, string>, request: Request) {
   const authHeader = request.headers.get('Authorization');
@@ -12,59 +12,36 @@ export async function requireUser(env: Record<string, string>, request: Request)
   }
 
   try {
-    const databaseUrl = env.DATABASE_URL;
-    if (!databaseUrl) {
-      throw new Error("DATABASE_URL est manquant");
+    const authUrl = env.VITE_NEON_AUTH_URL;
+    if (!authUrl) {
+      throw new Error("VITE_NEON_AUTH_URL est manquant");
     }
 
-    const sql = neon(databaseUrl);
+    const authClient = createAuthClient(authUrl);
     
-    // Better Auth defaults to snake_case column names for Postgres: user_id, expires_at
-    // but sometimes it's camelCase if not mapped. We will try snake_case first.
-    // We quote table and schema names just in case.
-    const rows = await sql`
-      SELECT u.id, u.email, u.name 
-      FROM neon_auth.session s
-      JOIN neon_auth."user" u ON u.id = s.user_id
-      WHERE s.token = ${token}
-      AND s.expires_at > NOW()
-    `;
+    // Pass the token as a Bearer token in the Authorization header to the getSession call
+    const { data, error } = await authClient.getSession({
+      fetchOptions: {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    });
 
-    if (rows && rows.length > 0) {
-      const user = rows[0];
+    if (error) {
+      throw new Error(`Session API returned error: ${error.message || JSON.stringify(error)}`);
+    }
+
+    if (data && data.user) {
       return {
-        id: user.id,
-        email: user.email,
-        name: user.name,
+        id: data.user.id,
+        email: data.user.email,
+        name: data.user.name,
       };
     }
 
-    throw new Error(`Session non trouvée ou expirée pour ce token.`);
+    throw new Error(`Session API returned invalid data: ${JSON.stringify(data)}`);
   } catch (err: any) {
-    // Si la colonne n'existe pas, on tente l'autre format (camelCase pur)
-    if (err.message && err.message.includes("does not exist")) {
-      try {
-        const databaseUrl = env.DATABASE_URL;
-        const sql = neon(databaseUrl!);
-        const rows = await sql`
-          SELECT u.id, u.email, u.name 
-          FROM neon_auth.session s
-          JOIN neon_auth."user" u ON u.id = s."userId"
-          WHERE s.token = ${token}
-          AND s."expiresAt" > NOW()
-        `;
-        if (rows && rows.length > 0) {
-          const user = rows[0];
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-          };
-        }
-      } catch (fallbackErr: any) {
-        throw new Error(`Session DB verification failed: ${fallbackErr.message}`);
-      }
-    }
-    throw new Error(`Session DB verification failed: ${err.message}`);
+    throw new Error(`Session verification failed: ${err.message}`);
   }
 }
