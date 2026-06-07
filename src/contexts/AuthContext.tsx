@@ -37,6 +37,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const signIn = async (email: string): Promise<{ error: string | null }> => {
         try {
+            // @ts-ignore
             const { error } = await authClient.signIn.magicLink({
                 email,
                 callbackURL: window.location.origin,

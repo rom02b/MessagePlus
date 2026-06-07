@@ -1,7 +1,6 @@
-import { createAuthClient } from 'better-auth/react';
-import { magicLinkClient } from 'better-auth/client/plugins';
+import { createAuthClient } from '@neondatabase/auth';
+import { BetterAuthReactAdapter } from '@neondatabase/auth/react';
 
-export const authClient = createAuthClient({
-    baseURL: window.location.origin,
-    plugins: [magicLinkClient()],
+export const authClient = createAuthClient(import.meta.env.VITE_NEON_AUTH_URL, {
+    adapter: BetterAuthReactAdapter(),
 });
