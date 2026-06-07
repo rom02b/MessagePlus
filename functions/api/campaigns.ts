@@ -9,15 +9,22 @@ export const onRequest: PagesFunction = async (context) => {
 
   const db = getDb(env.DATABASE_URL!);
   
-  // Auth verification via Neon Auth JWT
-  const user = await requireUser(env, request);
-  if (!user) {
-    return new Response(JSON.stringify({ error: 'Authentification requise.' }), {
+  let authError = 'Authentification requise.';
+  let userId: string | null = null;
+    
+  try {
+    const user = await requireUser(env, request);
+    if (user) userId = user.id;
+  } catch (err: any) {
+    authError = err.message || authError;
+  }
+
+  if (!userId) {
+    return new Response(JSON.stringify({ error: authError }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
     });
   }
-  const userId = user.id;
 
   if (request.method === 'GET') {
     try {

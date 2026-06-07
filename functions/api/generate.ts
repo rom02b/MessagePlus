@@ -194,17 +194,19 @@ export const onRequest: PagesFunction = async (context) => {
     // ── Session verification (Neon Auth JWT) ─────────────────────────────────
     let authenticatedUser: { id: string; email: string } | null = null;
 
+    let authError = 'Authentification requise. Connectez-vous pour générer du contenu.';
     try {
         const user = await requireUser(env, request);
         if (user) {
             authenticatedUser = { id: user.id, email: user.email };
         }
-    } catch {
-        // No valid session — allow unauthenticated if no auth is required
+    } catch (err: any) {
+        // No valid session
+        authError = err.message || authError;
     }
 
     if (!authenticatedUser) {
-        return new Response(JSON.stringify({ error: 'Authentification requise. Connectez-vous pour générer du contenu.' }), {
+        return new Response(JSON.stringify({ error: authError }), {
             status: 401,
             headers: { 'Content-Type': 'application/json' },
         });
