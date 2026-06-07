@@ -1,9 +1,16 @@
 import React, { useState } from 'react';
 import AuthModal from '../Auth/AuthModal';
+import { useAuth } from '../../contexts/AuthContext';
 import './Header.css';
 
 const Header: React.FC = () => {
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+    const { user } = useAuth();
+
+    const getInitials = (email: string, name?: string | null) => {
+        if (name) return name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+        return email.slice(0, 2).toUpperCase();
+    };
 
     return (
         <header className="header">
@@ -17,9 +24,15 @@ const Header: React.FC = () => {
                         </div>
                         <h1 className="header-title">Message<span>+</span></h1>
                     </div>
-                    <button className="btn btn-outline btn-login" onClick={() => setIsAuthModalOpen(true)}>
-                        Connexion
-                    </button>
+                    {user ? (
+                        <a href="/profile" className="profile-avatar-btn" title={user.email}>
+                            {getInitials(user.email, user.name)}
+                        </a>
+                    ) : (
+                        <button className="btn btn-outline btn-login" onClick={() => setIsAuthModalOpen(true)}>
+                            Connexion
+                        </button>
+                    )}
                 </div>
                 <div className="header-hero">
                     <h2 className="hero-title">Transformez <span>vos prédications</span><br/>en parcours d'engagement</h2>

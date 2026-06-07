@@ -30,9 +30,9 @@ const AuthCallbackPage = () => {
 
                 if (result?.data?.session || result?.data?.user) {
                     setStatus('success');
-                    // Session valide → on redirige vers l'app
+                    // Session valide → on redirige vers le profil
                     setTimeout(() => {
-                        window.location.replace('/');
+                        window.location.replace('/profile');
                     }, 800);
                 } else {
                     // Essai alternatif : laisser Better Auth gérer le callback URL
@@ -44,7 +44,7 @@ const AuthCallbackPage = () => {
                     if (verifier) {
                         // Forcer une requête vers le endpoint de vérification
                         const neonAuthUrl = import.meta.env.VITE_NEON_AUTH_URL;
-                        const verifyUrl = `${neonAuthUrl}/sign-in/magic-link/verify?token=${encodeURIComponent(verifier)}&callbackURL=${encodeURIComponent(window.location.origin + '/')}`;
+                        const verifyUrl = `${neonAuthUrl}/sign-in/magic-link/verify?token=${encodeURIComponent(verifier)}&callbackURL=${encodeURIComponent(window.location.origin + '/profile')}`;
 
                         // Rediriger directement vers l'endpoint de vérification Neon
                         window.location.replace(verifyUrl);

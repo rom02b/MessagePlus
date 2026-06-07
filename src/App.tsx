@@ -2,6 +2,7 @@ import React from 'react';
 import { CampaignProvider, useCampaign } from './contexts/CampaignContext';
 import { AuthProvider } from './contexts/AuthContext';
 import AuthCallbackPage from './pages/AuthCallbackPage';
+import ProfilePage from './components/Profile/ProfilePage';
 import Header from './components/Layout/Header';
 import Container from './components/Layout/Container';
 import Stepper from './components/Stepper/Stepper';
@@ -305,14 +306,23 @@ const AppContent: React.FC = () => {
 };
 
 const App: React.FC = () => {
-  // Intercept /auth/callback route for Neon Auth magic link verification
-  const isAuthCallback = window.location.pathname === '/auth/callback' ||
-    window.location.pathname.startsWith('/auth/callback');
+  const path = window.location.pathname;
 
-  if (isAuthCallback) {
+  // Route: /auth/callback — finalise la session Neon Auth
+  if (path === '/auth/callback' || path.startsWith('/auth/callback')) {
     return <AuthCallbackPage />;
   }
 
+  // Route: /profile — page de profil utilisateur
+  if (path === '/profile') {
+    return (
+      <AuthProvider>
+        <ProfilePage />
+      </AuthProvider>
+    );
+  }
+
+  // Route principale
   return (
     <AuthProvider>
       <CampaignProvider>

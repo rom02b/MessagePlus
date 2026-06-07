@@ -56,6 +56,28 @@
     cursor: pointer;
 }
 
+.profile-avatar-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-primary) 0%, #c4542a 100%);
+    color: white;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(231, 105, 55, 0.4);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.profile-avatar-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 4px 16px rgba(231, 105, 55, 0.5);
+}
+
 .header-hero {
     text-align: center;
     margin-top: 64px;
