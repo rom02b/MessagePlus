@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CampaignProvider, useCampaign } from './contexts/CampaignContext';
 import { AuthProvider } from './contexts/AuthContext';
 import AuthCallbackPage from './pages/AuthCallbackPage';
 import ProfilePage from './components/Profile/ProfilePage';
 import Header from './components/Layout/Header';
+import Sidebar from './components/Layout/Sidebar';
 import Container from './components/Layout/Container';
 import Stepper from './components/Stepper/Stepper';
 import InputToggle from './components/Input/InputToggle';
@@ -96,11 +97,30 @@ const AppContent: React.FC = () => {
     resetCampaign();
   };
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth > 768);
+
   return (
-    <div className="app">
-      <Header />
-      <Container>
-        <Stepper />
+    <div className="app-layout">
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+        onNewCampaign={handleNewCampaign}
+        onReload={(c) => {
+          resetCampaign();
+          
+          const mappedCampaign = {
+            ...c,
+            contentOptions: c.content_options,
+            createdAt: new Date(c.created_at),
+          };
+          
+          setCampaign(mappedCampaign as any);
+        }}
+      />
+      <div className="app-main">
+        <Header />
+        <Container>
+          <Stepper />
 
         {/* STEP 1: Source + Confession */}
         {currentStep === 1 && (
@@ -301,6 +321,7 @@ const AppContent: React.FC = () => {
           </div>
         )}
       </Container>
+      </div>
     </div>
   );
 };

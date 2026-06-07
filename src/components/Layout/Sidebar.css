@@ -1,32 +1,35 @@
 /* ── Sidebar Container ── */
 .sidebar {
+    width: 260px;
     height: 100vh;
-    background-color: var(--c-surface-2);
-    border-right: 1px solid var(--c-border);
-    transition: width 300ms cubic-bezier(0.2, 0, 0, 1), opacity 300ms ease;
+    position: relative; /* Use relative to participate in flex layout */
+    background-color: var(--color-white);
+    border-right: 1px solid var(--color-border);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
     overflow: hidden;
-    position: relative;
-    z-index: 100;
+    z-index: 200;
+    transition: width var(--transition-base), box-shadow var(--transition-base);
 }
 
 .sidebar.expanded {
-    width: 280px;
+    width: 260px;
 }
 
 .sidebar.collapsed {
     width: 0;
     border-right-color: transparent;
+    box-shadow: none;
 }
 
+/* Inner wrapper keeps fixed width while sidebar animates */
 .sidebar-inner {
-    width: 280px;
-    transition: opacity 200ms ease;
+    width: 260px;
     height: 100%;
     display: flex;
     flex-direction: column;
+    transition: opacity var(--transition-fast);
 }
 
 .sidebar.collapsed .sidebar-inner {
@@ -34,43 +37,44 @@
     pointer-events: none;
 }
 
-/* ── Collapsed trigger ── */
-.sidebar-toggle-btn.icon-only {
+/* ── Collapsed toggle (hamburger) shown when sidebar is closed ── */
+.sidebar-open-btn {
     position: fixed;
-    top: 20px;
-    left: 20px;
+    top: 14px;
+    left: 14px;
     z-index: 9999;
-    width: 40px;
-    height: 40px;
-    border-radius: var(--r-md);
-    background: var(--c-surface);
-    border: 1px solid var(--c-border-md);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--c-text-2);
-    transition: all var(--dur-fast) var(--ease-out);
+    color: var(--color-navy);
+    transition: background var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.sidebar-toggle-btn.icon-only:hover {
-    background: var(--c-border);
-    color: var(--c-text);
+.sidebar-open-btn:hover {
+    background: var(--color-background);
+    box-shadow: var(--shadow-md);
 }
 
-.sidebar-toggle-btn.icon-only svg {
-    width: 20px;
-    height: 20px;
+.sidebar-open-btn svg {
+    width: 18px;
+    height: 18px;
 }
 
-/* ── Expanded Header ── */
+/* ── Header ── */
 .sidebar-header {
     display: flex;
-    padding: var(--sp-4);
-    gap: var(--sp-2);
     align-items: center;
-    justify-content: space-between;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm);
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
 }
 
 .sidebar-new-btn {
@@ -78,96 +82,120 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--sp-2);
-    padding: 10px;
-    background: transparent;
-    border: 1px solid var(--c-border-md);
-    border-radius: var(--r-md);
-    color: var(--c-text);
-    font-size: var(--fs-sm);
-    font-weight: 500;
+    gap: var(--spacing-xs);
+    padding: 9px 12px;
+    background: var(--color-primary);
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--color-white);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
     cursor: pointer;
-    transition: all var(--dur-fast);
+    transition: background var(--transition-fast), transform var(--transition-fast);
 }
 
 .sidebar-new-btn:hover {
-    background: var(--c-border);
+    background: #d45a28;
+    transform: translateY(-1px);
 }
 
 .sidebar-new-btn svg {
     width: 16px;
     height: 16px;
+    flex-shrink: 0;
 }
 
-.sidebar-toggle-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--r-md);
+/* ── Collapse button inside expanded sidebar ── */
+.sidebar-collapse-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
     background: transparent;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--c-text-2);
+    color: var(--color-text-secondary);
     cursor: pointer;
-    transition: background var(--dur-fast);
+    transition: background var(--transition-fast), color var(--transition-fast);
+    flex-shrink: 0;
 }
 
-.sidebar-toggle-btn:hover {
-    background: var(--c-border);
-    color: var(--c-text);
+.sidebar-collapse-btn:hover {
+    background: var(--color-background);
+    color: var(--color-navy);
 }
 
-.sidebar-toggle-btn svg {
-    width: 20px;
-    height: 20px;
+.sidebar-collapse-btn svg {
+    width: 18px;
+    height: 18px;
 }
 
-/* ── Content ── */
+/* ── Section title ── */
+.sidebar-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--color-text-secondary);
+    padding: var(--spacing-sm) var(--spacing-sm) var(--spacing-xs);
+    flex-shrink: 0;
+}
+
+/* ── Scrollable content ── */
 .sidebar-content {
     flex: 1;
     overflow-y: auto;
-    padding: 0 var(--sp-4) var(--sp-4);
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
+    padding-bottom: var(--spacing-sm);
 }
 
-.sidebar-section-title {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--c-text-3);
-    margin: var(--sp-4) 0 var(--sp-2);
-    padding: 0 var(--sp-2);
-    letter-spacing: 0.05em;
+.sidebar-content::-webkit-scrollbar {
+    width: 4px;
 }
 
+.sidebar-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 2px;
+}
+
+/* ── Loading / empty states ── */
 .sidebar-loading,
 .sidebar-empty {
-    padding: var(--sp-4) var(--sp-2);
-    font-size: var(--fs-sm);
-    color: var(--c-text-3);
+    padding: var(--spacing-md) var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    text-align: center;
+    line-height: 1.5;
 }
 
-/* ── List Items ── */
+/* ── Campaign list ── */
 .sidebar-list {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    padding: 0 var(--spacing-xs);
 }
 
 .sidebar-item {
     display: flex;
     align-items: center;
-    gap: var(--sp-2);
-    padding: var(--sp-2) var(--sp-3);
-    border-radius: var(--r-md);
+    gap: var(--spacing-xs);
+    padding: 8px 10px;
+    border-radius: var(--radius-md);
     cursor: pointer;
-    transition: background var(--dur-fast);
+    transition: background var(--transition-fast);
+    position: relative;
 }
 
 .sidebar-item:hover {
-    background: var(--c-border);
+    background: var(--color-background);
 }
 
 .sidebar-item-content {
@@ -176,33 +204,38 @@
 }
 
 .sidebar-item-title {
-    font-size: 14px;
-    color: var(--c-text);
+    font-size: 13px;
+    color: var(--color-text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     font-weight: 500;
+    line-height: 1.3;
 }
 
 .sidebar-item-meta {
-    font-size: 12px;
-    color: var(--c-text-3);
+    font-size: 11px;
+    color: var(--color-text-secondary);
     margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .sidebar-item-delete {
-    width: 28px;
-    height: 28px;
-    border-radius: var(--r-sm);
+    width: 26px;
+    height: 26px;
+    border-radius: var(--radius-sm);
     border: none;
     background: transparent;
-    color: var(--c-text-3);
+    color: var(--color-text-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     opacity: 0;
-    transition: all var(--dur-fast);
+    transition: opacity var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+    flex-shrink: 0;
 }
 
 .sidebar-item:hover .sidebar-item-delete {
@@ -210,13 +243,13 @@
 }
 
 .sidebar-item-delete:hover {
-    background: var(--c-border-md);
-    color: var(--c-error);
+    background: #fee2e2;
+    color: var(--color-error);
 }
 
 .sidebar-item-delete svg {
-    width: 14px;
-    height: 14px;
+    width: 13px;
+    height: 13px;
 }
 
 .sidebar-item-delete:disabled {
@@ -224,31 +257,58 @@
     cursor: wait;
 }
 
-/* ── App Layout Tweaks ── */
-.layout-wrapper {
-    display: flex;
-    height: 100vh;
-    width: 100vw;
-    overflow: hidden;
-}
+/* ── Mobile: drawer + backdrop ── */
+@media (max-width: 767px) {
+    .sidebar-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 199;
+        animation: backdropFadeIn 200ms ease;
+    }
 
-.layout-main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    overflow-x: hidden;
-    height: 100vh;
-    position: relative;
-    background: var(--c-bg);
-}
+    @keyframes backdropFadeIn {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
 
-@media (max-width: 768px) {
     .sidebar {
         position: fixed;
-        left: 0;
         top: 0;
+        left: 0;
         bottom: 0;
-        box-shadow: var(--sh-md);
+        height: 100%;
+        box-shadow: var(--shadow-lg);
+        /* Override width transitions for mobile slide */
+        transition: transform var(--transition-base);
+        width: 280px !important; /* Always full-width drawer */
+    }
+
+    .sidebar.expanded {
+        transform: translateX(0);
+    }
+
+    .sidebar.collapsed {
+        transform: translateX(-100%);
+        border-right-color: var(--color-border);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .sidebar.collapsed .sidebar-inner {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* Open button slightly adjusted for mobile */
+    .sidebar-open-btn {
+        top: 12px;
+        left: 12px;
+    }
+}
+
+/* ── Desktop: push layout ── */
+@media (min-width: 768px) {
+    .sidebar-backdrop {
+        display: none;
     }
 }
