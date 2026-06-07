@@ -71,7 +71,7 @@ export async function requireUser(env: Record<string, string>, request: Request)
             name: user.name,
           };
         }
-        throw new Error(`Session DB (camelCase) returned 0 rows for token/hash`);
+        throw new Error(`Session DB (camelCase) returned 0 rows. Received token: ${token.substring(0, 5)}... (length: ${token.length})`);
       } catch (fallbackErr: any) {
         throw new Error(`Session DB fallback query failed: ${fallbackErr.message}`);
       }
