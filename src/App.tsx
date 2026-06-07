@@ -1,6 +1,7 @@
 import React from 'react';
 import { CampaignProvider, useCampaign } from './contexts/CampaignContext';
 import { AuthProvider } from './contexts/AuthContext';
+import AuthCallbackPage from './pages/AuthCallbackPage';
 import Header from './components/Layout/Header';
 import Container from './components/Layout/Container';
 import Stepper from './components/Stepper/Stepper';
@@ -16,6 +17,11 @@ import DayCard from './components/Results/DayCard';
 import { generateCampaign } from './services/aiService';
 import { getTranscript, isValidYouTubeUrl } from './services/youtubeService';
 import './App.css';
+
+// Handle /auth/callback route for Neon Auth magic link
+if (window.location.pathname === '/auth/callback' || window.location.pathname.startsWith('/auth/callback')) {
+  // Render the callback page immediately — replaced in the App component below
+}
 
 const AppContent: React.FC = () => {
   const {
@@ -299,6 +305,14 @@ const AppContent: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  // Intercept /auth/callback route for Neon Auth magic link verification
+  const isAuthCallback = window.location.pathname === '/auth/callback' ||
+    window.location.pathname.startsWith('/auth/callback');
+
+  if (isAuthCallback) {
+    return <AuthCallbackPage />;
+  }
+
   return (
     <AuthProvider>
       <CampaignProvider>

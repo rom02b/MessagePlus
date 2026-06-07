@@ -40,7 +40,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             // @ts-ignore
             const { error } = await authClient.signIn.magicLink({
                 email,
-                callbackURL: window.location.origin,
+                callbackURL: `${window.location.origin}/auth/callback`,
             });
             return { error: error?.message ?? null };
         } catch (err: any) {
