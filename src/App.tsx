@@ -66,6 +66,8 @@ const AppContent: React.FC = () => {
     }
   };
 
+  const [refreshHistoryTrigger, setRefreshHistoryTrigger] = useState(0);
+
   const handleGenerate = async () => {
     setIsGenerating(true);
     setError(null);
@@ -86,6 +88,7 @@ const AppContent: React.FC = () => {
       });
 
       setCampaign(generatedCampaign);
+      setRefreshHistoryTrigger(prev => prev + 1); // Trigger history refresh
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue lors de la génération');
     } finally {
@@ -105,6 +108,7 @@ const AppContent: React.FC = () => {
         isOpen={isSidebarOpen}
         onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         onNewCampaign={handleNewCampaign}
+        refreshTrigger={refreshHistoryTrigger}
         onReload={(c) => {
           resetCampaign();
           

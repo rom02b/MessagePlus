@@ -9,6 +9,7 @@ interface SidebarProps {
     onNewCampaign: () => void;
     isOpen: boolean;
     onToggle: () => void;
+    refreshTrigger?: number;
 }
 
 const TONE_LABELS: Record<string, string> = {
@@ -19,7 +20,7 @@ const TONE_LABELS: Record<string, string> = {
     contemplative: 'Méditatif',
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ onReload, onNewCampaign, isOpen, onToggle }) => {
+const Sidebar: React.FC<SidebarProps> = ({ onReload, onNewCampaign, isOpen, onToggle, refreshTrigger }) => {
     const { user } = useAuth();
     const [campaigns, setCampaigns] = useState<SavedCampaign[]>([]);
     const [loading, setLoading] = useState(true);
@@ -35,11 +36,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onReload, onNewCampaign, isOpen, onTo
         return () => mq.removeEventListener('change', handleChange);
     }, []);
 
-    // Fetch campaigns when user is connected and sidebar opens
+    // Fetch campaigns when user is connected and sidebar opens or refresh is triggered
     useEffect(() => {
         if (!user) return;
         fetchCampaigns();
-    }, [user]);
+    }, [user, refreshTrigger]);
 
     const fetchCampaigns = async () => {
         setLoading(true);

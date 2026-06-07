@@ -359,7 +359,37 @@ export const onRequest: PagesFunction = async (context) => {
             await sendNotificationEmail(env, targetEmail, title, days);
         }
 
-        return new Response(JSON.stringify({ title, days, quotes, emailSentTo: targetEmail || null }), {
+        // --- Sauvegarde dans la base de données ---
+        let insertedId = null;
+        if (authenticatedUser) {
+            try {
+                const inserted = await db.insert(campaigns).values({
+                    userId: authenticatedUser.id,
+                    title: title || 'Parcours sans titre',
+                    confession: config.confession,
+                    duration: config.duration,
+                    tone: config.tone,
+                    contentOptions: config.contentOptions,
+                    speakerName: config.speakerName || null,
+                    days: days as any,
+                    quotes: quotes as any,
+                }).returning({ id: campaigns.id });
+                if (inserted && inserted.length > 0) {
+                    insertedId = inserted[0].id;
+                }
+            } catch (saveError) {
+                console.error('Erreur lors de la sauvegarde du parcours:', saveError);
+                // On continue pour renvoyer le contenu même si la sauvegarde échoue
+            }
+        }
+
+        return new Response(JSON.stringify({ 
+            id: insertedId,
+            title, 
+            days, 
+            quotes, 
+            emailSentTo: targetEmail || null 
+        }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
         });
