@@ -11,13 +11,9 @@ const DurationSlider: React.FC = () => {
 
     return (
         <div className="duration-slider">
-            <div className="duration-header">
-                <span className="section-label">Durée du parcours</span>
-                <div>
-                    <span className="duration-value">{duration}</span>
-                    <span className="duration-sub">jours</span>
-                </div>
-            </div>
+            <label className="section-label">
+                Durée du parcours : <span className="duration-value">{duration} jours</span>
+            </label>
             <div className="slider-container">
                 <input
                     type="range"
@@ -32,7 +28,6 @@ const DurationSlider: React.FC = () => {
                         <span
                             key={day}
                             className={`slider-label ${duration === day ? 'active' : ''}`}
-                            onClick={() => setDuration(day)}
                         >
                             {day}
                         </span>

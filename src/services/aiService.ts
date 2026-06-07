@@ -1,14 +1,14 @@
 import type { Campaign, CampaignConfig, DayContent } from '../types/campaign';
-import { supabase } from '../lib/supabase';
+import { authClient } from '../lib/auth-client';
 
 /**
  * Generate a campaign by calling the Vercel Serverless Function /api/generate.
  * The Gemini API key lives only on the server — never in this file.
  */
 export const generateCampaign = async (config: CampaignConfig): Promise<Campaign> => {
-  // Get current session token to authenticate the request
-  const { data: { session } } = await supabase.auth.getSession();
-  const token = session?.access_token;
+  // Get current session
+  const { data } = await authClient.getSession();
+  const token = data?.session?.token;
 
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) {
@@ -18,6 +18,7 @@ export const generateCampaign = async (config: CampaignConfig): Promise<Campaign
   const response = await fetch('/api/generate', {
     method: 'POST',
     headers,
+    credentials: 'omit', // ou include si on veut utiliser les cookies
     body: JSON.stringify(config),
   });
 

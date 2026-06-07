@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import './AuthModal.css';
 
@@ -29,7 +30,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose }) => {
         }
     };
 
-    return (
+    return createPortal(
         <div className="auth-overlay" onClick={onClose}>
             <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
 
@@ -102,7 +103,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose }) => {
                     </>
                 )}
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 

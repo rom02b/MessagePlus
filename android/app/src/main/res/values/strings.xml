@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MessagePlus</string>
+    <string name="title_activity_main">MessagePlus</string>
+    <string name="package_name">com.romainbiava.messageplus</string>
+    <string name="custom_url_scheme">com.romainbiava.messageplus</string>
+</resources>

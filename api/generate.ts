@@ -1,6 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { createClient } from '@supabase/supabase-js';
+import { auth } from './lib/auth';
+import { db } from './lib/db';
+import { campaigns } from './lib/schema';
+import { eq, gte, and, count } from 'drizzle-orm';
 
 // ── Brevo Email Sending Helper ─────────────────────────────────────────────
 async function sendNotificationEmail(toEmail: string, title: string | undefined, days: any[]) {
@@ -191,39 +194,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    // ── JWT verification (Supabase) ───────────────────────────────────────
-    // SUPABASE_URL and SUPABASE_SERVICE_KEY are server-only env vars (no VITE_ prefix)
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
+    // ── Session verification (Better Auth) ─────────────────────────────────
+    let authenticatedUser: { id: string; email: string } | null = null;
 
-    if (supabaseUrl && supabaseServiceKey) {
-        const authHeader = req.headers['authorization'] || '';
-        const token = authHeader.replace(/^Bearer\s+/i, '');
-
-        if (!token) {
-            return res.status(401).json({ error: 'Authentification requise. Connectez-vous pour générer du contenu.' });
+    try {
+        const session = await auth.api.getSession({ headers: req.headers as any });
+        if (session?.user) {
+            authenticatedUser = { id: session.user.id, email: session.user.email };
         }
+    } catch {
+        // No valid session — allow unauthenticated if no auth is required
+    }
 
-        const adminClient = createClient(supabaseUrl, supabaseServiceKey);
-        const { data: { user }, error: authError } = await adminClient.auth.getUser(token);
+    if (!authenticatedUser) {
+        return res.status(401).json({ error: 'Authentification requise. Connectez-vous pour générer du contenu.' });
+    }
 
-        if (authError || !user) {
-            return res.status(401).json({ error: 'Session expirée. Veuillez vous reconnecter.' });
-        }
+    // ── Rate limiting (8 per day) ─────────────────────────────────────────
+    const startOfDay = new Date();
+    startOfDay.setUTCHours(0, 0, 0, 0);
 
-        // ── Rate limiting (8 per day) ─────────────────────────────────────────
-        const startOfDay = new Date();
-        startOfDay.setUTCHours(0, 0, 0, 0);
+    const [{ value: todayCount }] = await db.select({ value: count() })
+        .from(campaigns)
+        .where(
+            and(
+                eq(campaigns.userId, authenticatedUser.id),
+                gte(campaigns.createdAt, startOfDay)
+            )
+        );
 
-        const { count, error: countError } = await adminClient
-            .from('campaigns')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', user.id)
-            .gte('created_at', startOfDay.toISOString());
-
-        if (!countError && count !== null && count >= 8) {
-            return res.status(429).json({ error: 'Limite quotidienne atteinte (8 parcours maximum par jour). Veuillez réessayer demain.' });
-        }
+    if (todayCount >= 8) {
+        return res.status(429).json({ error: 'Limite quotidienne atteinte (8 parcours maximum par jour). Veuillez réessayer demain.' });
     }
 
     // API key — server-side only, never sent to the browser
@@ -243,7 +244,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
-            model: 'gemini-2.0-flash',
+            model: 'gemini-3.5-flash',
             generationConfig: {
                 temperature: 0.7,
                 topK: 40,
@@ -312,16 +313,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         let targetEmail = config.userEmail;
         
         // Si l'utilisateur est connecté, on privilégie son email Auth
-        if (supabaseUrl && supabaseServiceKey) {
-            const authHeader = req.headers['authorization'] || '';
-            const token = authHeader.replace(/^Bearer\s+/i, '');
-            if (token) {
-                const adminClient = createClient(supabaseUrl, supabaseServiceKey);
-                const { data: { user } } = await adminClient.auth.getUser(token);
-                if (user && user.email) {
-                    targetEmail = user.email; // overwrite with verified DB email
-                }
-            }
+        if (authenticatedUser?.email) {
+            targetEmail = authenticatedUser.email;
         }
         
         if (targetEmail) {

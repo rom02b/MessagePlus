@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { supabase } from '../../lib/supabase';
+import { authClient } from '../../lib/auth-client';
 import './HistoryPanel.css';
 
 interface SavedCampaign {
@@ -43,18 +43,33 @@ const HistoryPanel: React.FC<HistoryPanelProps> = ({ isOpen, onClose, onReload }
 
     const fetchCampaigns = async () => {
         setLoading(true);
-        const { data } = await supabase
-            .from('campaigns')
-            .select('id, title, confession, duration, tone, days, content_options, speaker_name, quotes, created_at')
-            .order('created_at', { ascending: false })
-            .limit(20);
-        setCampaigns(data ?? []);
+        const { data } = await authClient.getSession();
+        const token = data?.session?.token;
+
+        const response = await fetch('/api/campaigns', {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+            credentials: 'omit'
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            setCampaigns(result.campaigns ?? []);
+        } else {
+            setCampaigns([]);
+        }
         setLoading(false);
     };
 
     const handleDelete = async (id: string) => {
         setDeletingId(id);
-        await supabase.from('campaigns').delete().eq('id', id);
+        const { data } = await authClient.getSession();
+        const token = data?.session?.token;
+
+        await fetch(`/api/campaigns?id=${id}`, {
+            method: 'DELETE',
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+            credentials: 'omit'
+        });
         setCampaigns((prev) => prev.filter((c) => c.id !== id));
         setDeletingId(null);
     };

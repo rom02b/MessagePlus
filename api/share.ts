@@ -1,5 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
+import { db } from './lib/db';
+import { campaigns } from './lib/schema';
+import { eq } from 'drizzle-orm';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -14,25 +16,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'ID de campagne manquant.' });
     }
 
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
+    const data = await db.select({
+        id: campaigns.id,
+        title: campaigns.title,
+        speaker_name: campaigns.speakerName,
+        confession: campaigns.confession,
+        duration: campaigns.duration,
+        tone: campaigns.tone,
+        content_options: campaigns.contentOptions,
+        days: campaigns.days,
+        quotes: campaigns.quotes,
+        created_at: campaigns.createdAt,
+    })
+    .from(campaigns)
+    .where(eq(campaigns.id, id))
+    .limit(1);
 
-    if (!supabaseUrl || !supabaseServiceKey) {
-        return res.status(500).json({ error: 'Configuration serveur incomplète.' });
-    }
+    const campaign = data[0];
 
-    // Use service key to bypass RLS for public read-by-ID
-    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
-
-    const { data, error } = await adminClient
-        .from('campaigns')
-        .select('id, title, speaker_name, confession, duration, tone, content_options, days, quotes, created_at')
-        .eq('id', id)
-        .single();
-
-    if (error || !data) {
+    if (!campaign) {
         return res.status(404).json({ error: 'Parcours introuvable ou lien expiré.' });
     }
 
-    return res.status(200).json({ campaign: data });
+    return res.status(200).json({ campaign });
 }

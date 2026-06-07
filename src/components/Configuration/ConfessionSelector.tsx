@@ -20,27 +20,20 @@ const ConfessionSelector: React.FC = () => {
     ];
 
     return (
-        <div className="confession-selector">
-            <label className="section-label">Confession</label>
-            <div className="confession-options">
+        <div className="confession-selector form-group" style={{ marginBottom: 0 }}>
+            <label className="section-label" htmlFor="confession-select">Confession</label>
+            <select
+                id="confession-select"
+                value={confession}
+                onChange={(e) => setConfession(e.target.value as Confession)}
+                style={{ width: '100%', cursor: 'pointer', appearance: 'auto' }}
+            >
                 {confessions.map((conf) => (
-                    <button
-                        key={conf.value}
-                        className={`confession-card ${confession === conf.value ? 'selected' : ''}`}
-                        onClick={() => setConfession(conf.value)}
-                    >
-                        <div className="confession-radio">
-                            {confession === conf.value && (
-                                <div className="radio-dot" />
-                            )}
-                        </div>
-                        <div className="confession-content">
-                            <h4 className="confession-label">{conf.label}</h4>
-                            <p className="confession-description">{conf.description}</p>
-                        </div>
-                    </button>
+                    <option key={conf.value} value={conf.value}>
+                        {conf.label} - {conf.description}
+                    </option>
                 ))}
-            </div>
+            </select>
         </div>
     );
 };

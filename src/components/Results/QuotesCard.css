@@ -3,9 +3,9 @@
     background: var(--c-surface);
     border: 1px solid var(--c-border);
     border-radius: var(--r-xl);
-    padding: var(--sp-6);
-    box-shadow: var(--sh-sm);
-    margin-top: var(--sp-5);
+    padding: var(--sp-4);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    margin-top: var(--sp-4);
 }
 
 .quotes-card-header {

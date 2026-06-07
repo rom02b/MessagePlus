@@ -44,14 +44,9 @@ const DayCard: React.FC<DayCardProps> = ({ dayContent }) => {
                 return (
                     <div className="email-content">
                         <div className="email-subject">
-                            <strong>Sujet</strong> {dayContent.email.subject}
+                            <strong>Sujet :</strong> {dayContent.email.subject}
                         </div>
-                        <iframe
-                            className="email-iframe"
-                            srcDoc={dayContent.email.body}
-                            title="Aperçu email"
-                            sandbox="allow-same-origin"
-                        />
+                        <div className="email-body" dangerouslySetInnerHTML={{ __html: dayContent.email.body }} />
                     </div>
                 );
             case 'social':
@@ -63,10 +58,8 @@ const DayCard: React.FC<DayCardProps> = ({ dayContent }) => {
         <div className="day-card">
             <div className="day-card-header">
                 <div>
-                    <div className="day-badge">
-                        <span className="day-number-pill">Jour {dayContent.day}</span>
-                    </div>
-                    <h3 className="day-title">{dayContent.theme}</h3>
+                    <h3 className="day-title">Jour {dayContent.day}</h3>
+                    <p className="day-theme">{dayContent.theme}</p>
                 </div>
                 <div className="day-verse">
                     <svg className="verse-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -75,7 +68,7 @@ const DayCard: React.FC<DayCardProps> = ({ dayContent }) => {
                     </svg>
                     <div>
                         <div className="verse-reference">{dayContent.verse.reference}</div>
-                        <div className="verse-text">«{dayContent.verse.text}»</div>
+                        <div className="verse-text">"{dayContent.verse.text}"</div>
                     </div>
                 </div>
             </div>
@@ -115,10 +108,10 @@ const DayCard: React.FC<DayCardProps> = ({ dayContent }) => {
                 {renderContent()}
             </div>
 
-            <button className={`copy-btn ${copied ? 'copied' : ''}`} onClick={handleCopy}>
+            <button className="copy-btn" onClick={handleCopy}>
                 {copied ? (
                     <>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <polyline points="20 6 9 17 4 12" />
                         </svg>
                         Copié !

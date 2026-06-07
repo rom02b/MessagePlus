@@ -1,11 +1,20 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext } from 'react';
 import type { ReactNode } from 'react';
-import type { User, Session } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
+import { authClient } from '../lib/auth-client';
+
+interface AuthUser {
+    id: string;
+    email: string;
+    name?: string | null;
+}
+
+interface AuthSession {
+    token: string;
+}
 
 interface AuthContextType {
-    user: User | null;
-    session: Session | null;
+    user: AuthUser | null;
+    session: AuthSession | null;
     loading: boolean;
     signIn: (email: string) => Promise<{ error: string | null }>;
     signOut: () => Promise<void>;
@@ -20,40 +29,26 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<User | null>(null);
-    const [session, setSession] = useState<Session | null>(null);
-    const [loading, setLoading] = useState(true);
+    const { data, isPending } = authClient.useSession();
 
-    useEffect(() => {
-        // Get initial session
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            setUser(session?.user ?? null);
-            setLoading(false);
-        });
-
-        // Listen for auth changes (magic link callback, sign out, etc.)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setSession(session);
-            setUser(session?.user ?? null);
-            setLoading(false);
-        });
-
-        return () => subscription.unsubscribe();
-    }, []);
+    const user = data?.user ? { id: data.user.id, email: data.user.email, name: data.user.name } : null;
+    const session = data?.session ? { token: data.session.token } : null;
+    const loading = isPending;
 
     const signIn = async (email: string): Promise<{ error: string | null }> => {
-        const { error } = await supabase.auth.signInWithOtp({
-            email,
-            options: {
-                emailRedirectTo: window.location.origin,
-            },
-        });
-        return { error: error?.message ?? null };
+        try {
+            const { error } = await authClient.signIn.magicLink({
+                email,
+                callbackURL: window.location.origin,
+            });
+            return { error: error?.message ?? null };
+        } catch (err: any) {
+            return { error: err?.message || 'Erreur de connexion' };
+        }
     };
 
     const signOut = async () => {
-        await supabase.auth.signOut();
+        await authClient.signOut();
     };
 
     return (

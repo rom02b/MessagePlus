@@ -9,9 +9,7 @@ interface ContainerProps {
 const Container: React.FC<ContainerProps> = ({ children, className = '' }) => {
     return (
         <div className={`app-container ${className}`}>
-            <div className="container">
-                {children}
-            </div>
+            {children}
         </div>
     );
 };
