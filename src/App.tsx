@@ -124,10 +124,10 @@ const AppContent: React.FC = () => {
       <div className="app-main">
         <Header />
         <Container>
-          <Stepper />
+          {!campaign && <Stepper />}
 
         {/* STEP 1: Source + Confession */}
-        {currentStep === 1 && (
+        {currentStep === 1 && !campaign && (
           <div className="step-content fade-in">
             <div className="card">
               <div className="card-header">
@@ -171,7 +171,7 @@ const AppContent: React.FC = () => {
         )}
 
         {/* STEP 2: Configuration + Metadata */}
-        {currentStep === 2 && (
+        {currentStep === 2 && !campaign && (
           <div className="step-content fade-in">
             <div className="card">
               <div className="card-header">
