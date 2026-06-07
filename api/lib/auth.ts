@@ -7,10 +7,15 @@ import { drizzle } from 'drizzle-orm/neon-serverless';
 const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
 const db = drizzle({ client: pool });
 
+let baseUrl = process.env.BETTER_AUTH_URL || 'http://localhost:5173';
+if (!baseUrl.endsWith('/api/auth')) {
+    baseUrl = baseUrl.replace(/\/$/, '') + '/api/auth';
+}
+
 export const auth = betterAuth({
     database: drizzleAdapter(db, { provider: 'pg' }),
     secret: process.env.BETTER_AUTH_SECRET,
-    baseURL: process.env.BETTER_AUTH_URL,
+    baseURL: baseUrl,
     trustedOrigins: [
         process.env.BETTER_AUTH_URL || 'http://localhost:5173',
     ],

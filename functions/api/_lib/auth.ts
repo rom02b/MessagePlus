@@ -8,10 +8,15 @@ export function getAuth(env: Record<string, string>) {
   const sql = neon(env.DATABASE_URL!);
   const db = drizzle({ client: sql });
 
+  let baseUrl = env.BETTER_AUTH_URL || 'http://localhost:5173';
+  if (!baseUrl.endsWith('/api/auth')) {
+    baseUrl = baseUrl.replace(/\/$/, '') + '/api/auth';
+  }
+
   return betterAuth({
     database: drizzleAdapter(db, { provider: 'pg' }),
     secret: env.BETTER_AUTH_SECRET,
-    baseURL: env.BETTER_AUTH_URL,
+    baseURL: baseUrl,
     trustedOrigins: [
       env.BETTER_AUTH_URL || 'http://localhost:5173',
     ],
