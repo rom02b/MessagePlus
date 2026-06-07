@@ -1,13 +1,4 @@
-import { neon } from '@neondatabase/serverless';
-
-async function hashToken(token: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(token);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  return hashHex;
-}
+import * as jose from 'jose';
 
 export async function requireUser(env: Record<string, string>, request: Request) {
   const authHeader = request.headers.get('Authorization');
@@ -21,27 +12,25 @@ export async function requireUser(env: Record<string, string>, request: Request)
   }
 
   try {
-    const databaseUrl = env.DATABASE_URL;
-    if (!databaseUrl) {
-      throw new Error("DATABASE_URL est manquant");
+    const authUrl = env.VITE_NEON_AUTH_URL;
+    if (!authUrl) {
+      throw new Error("VITE_NEON_AUTH_URL est manquant");
     }
 
-    const sql = neon(databaseUrl);
+    // Neon Auth génère un JWT (eyJhb...)
+    // On doit vérifier sa signature avec les clés publiques de l'API
+    const baseUrl = authUrl.replace(/\/$/, '');
+    const jwksUrl = new URL(baseUrl + '/.well-known/jwks.json');
+    const JWKS = jose.createRemoteJWKSet(jwksUrl);
     
-    // Le token côté client est en clair, mais Better Auth le stocke haché en SHA-256
-    const hashedToken = await hashToken(token);
-    
-    // On va tenter de chercher le token en clair et le token haché, au cas où
-    const rows = await sql`
-      SELECT u.id, u.email, u.name 
-      FROM neon_auth.session s
-      JOIN neon_auth."user" u ON u.id = s.user_id
-      WHERE (s.token = ${token} OR s.token = ${hashedToken})
-      AND s.expires_at > NOW()
-    `;
+    const { payload } = await jose.jwtVerify(token, JWKS);
 
-    if (rows && rows.length > 0) {
-      const user = rows[0];
+    if (!payload) {
+      throw new Error("Payload du JWT vide");
+    }
+
+    const user = (payload as any).user;
+    if (user && user.id) {
       return {
         id: user.id,
         email: user.email,
@@ -49,33 +38,16 @@ export async function requireUser(env: Record<string, string>, request: Request)
       };
     }
 
-    throw new Error(`Session non trouvée ou expirée pour ce token (plain et hash essayés)`);
-  } catch (err: any) {
-    if (err.message && err.message.includes("does not exist")) {
-      try {
-        const hashedToken = await hashToken(token);
-        const databaseUrl = env.DATABASE_URL;
-        const sql = neon(databaseUrl!);
-        const rows = await sql`
-          SELECT u.id, u.email, u.name 
-          FROM neon_auth.session s
-          JOIN neon_auth."user" u ON u.id = s."userId"
-          WHERE (s.token = ${token} OR s.token = ${hashedToken})
-          AND s."expiresAt" > NOW()
-        `;
-        if (rows && rows.length > 0) {
-          const user = rows[0];
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-          };
-        }
-        throw new Error(`Session DB (camelCase) returned 0 rows. Received token: ${token.substring(0, 5)}... (length: ${token.length})`);
-      } catch (fallbackErr: any) {
-        throw new Error(`Session DB fallback query failed: ${fallbackErr.message}`);
-      }
+    if (payload.sub) {
+      return {
+        id: payload.sub,
+        email: (payload as any).email || '',
+        name: (payload as any).name || '',
+      };
     }
-    throw new Error(`Session DB verification failed: ${err.message}`);
+
+    throw new Error(`Format du JWT inattendu: ${JSON.stringify(payload)}`);
+  } catch (err: any) {
+    throw new Error(`Erreur JWT: ${err.message}`);
   }
 }
