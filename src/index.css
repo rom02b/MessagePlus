@@ -1,19 +1,16 @@
 :root {
   /* Barnabas Color Palette */
-  --color-primary: #e76937;
-  /* Orange - Primary Actions */
+  --color-primary: #111111; /* Changed to Black for buttons */
+  --color-primary-hover: #333333;
+  --color-orange: #e76937; /* Kept for accents if needed */
   --color-navy: #092040;
-  /* Navy - Headers & Navigation */
   --color-navy-alt: #081f3d;
-  /* Navy Alternative */
-  --color-blue-light: #b7ccdc;
-  /* Light Blue - Secondary Elements */
-  --color-background: #F2F2F7;
-  /* iOS Grouped Background */
+  --color-blue-light: #e4edf5; /* Lighter blue for gradient */
+  --color-background: #f4f7f9; /* Fallback background */
   --color-white: #ffffff;
-  --color-text-primary: #000000;
-  --color-text-secondary: #3C3C4399;
-  --color-border: #e0e0e0;
+  --color-text-primary: #111111;
+  --color-text-secondary: #666666;
+  --color-border: #e2e8f0;
   --color-error: #dc3545;
   --color-success: #28a745;
 
@@ -36,8 +33,10 @@
   --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
 
   /* Typography */
-  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  --font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+  --font-family-heading: 'Bricolage Grotesque', var(--font-family);
+  --font-body: var(--font-family);
+  --font-display: var(--font-family-heading);
   --font-size-sm: 0.875rem;
   --font-size-base: 1rem;
   --font-size-lg: 1.125rem;
@@ -67,7 +66,11 @@ html {
 body {
   font-family: var(--font-family);
   color: var(--color-text-primary);
-  background-color: var(--color-background);
+  background: 
+    radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(135deg, var(--color-blue-light) 0%, var(--color-white) 100%);
+  background-size: 20px 20px, 100% 100%;
+  background-attachment: fixed;
   line-height: 1.6;
   min-height: 100vh;
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -80,7 +83,8 @@ h3,
 h4,
 h5,
 h6 {
-  font-weight: 600;
+  font-family: var(--font-family-heading);
+  font-weight: 700;
   line-height: 1.2;
   margin-bottom: var(--spacing-sm);
 }
@@ -138,18 +142,18 @@ button {
 .btn-primary {
   background-color: var(--color-primary);
   color: var(--color-white);
-  box-shadow: 0 2px 8px rgba(231, 105, 55, 0.2);
+  border: none;
 }
 
 .btn-primary:hover {
-  background-color: #d45a28;
-  box-shadow: 0 4px 12px rgba(231, 105, 55, 0.3);
+  background-color: var(--color-primary-hover);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transform: translateY(-1px);
 }
 
 .btn-primary:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(231, 105, 55, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .btn-secondary {

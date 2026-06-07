@@ -83,20 +83,21 @@
     align-items: center;
     justify-content: center;
     gap: var(--spacing-xs);
-    padding: 9px 12px;
-    background: var(--color-primary);
-    border: none;
+    padding: 8px 12px;
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    color: var(--color-white);
+    color: var(--color-text-primary);
     font-size: var(--font-size-sm);
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
-    transition: background var(--transition-fast), transform var(--transition-fast);
+    transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 
 .sidebar-new-btn:hover {
-    background: #d45a28;
-    transform: translateY(-1px);
+    background: var(--color-background);
+    border-color: #cbd5e1;
+    transform: none;
 }
 
 .sidebar-new-btn svg {
@@ -131,7 +132,6 @@
     height: 18px;
 }
 
-/* ── Section title ── */
 .sidebar-section-title {
     font-size: 11px;
     font-weight: 700;
@@ -140,6 +140,56 @@
     color: var(--color-text-secondary);
     padding: var(--spacing-sm) var(--spacing-sm) var(--spacing-xs);
     flex-shrink: 0;
+}
+
+/* ── Search Bar ── */
+.sidebar-search {
+    padding: 0 var(--spacing-xs) var(--spacing-xs) var(--spacing-xs);
+    flex-shrink: 0;
+}
+
+.sidebar-search-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-background);
+    font-family: var(--font-family);
+    font-size: 13px;
+    color: var(--color-text-primary);
+    transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.sidebar-search-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background-color: var(--color-white);
+}
+
+/* ── Footer / Logout ── */
+.sidebar-footer {
+    padding: var(--spacing-sm);
+    border-top: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.sidebar-logout-btn {
+    width: 100%;
+    padding: 8px 12px;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.sidebar-logout-btn:hover {
+    background: #fee2e2;
+    color: var(--color-error);
+    border-color: #fca5a5;
 }
 
 /* ── Scrollable content ── */
