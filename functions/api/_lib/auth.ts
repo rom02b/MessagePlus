@@ -4,13 +4,23 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { drizzle } from 'drizzle-orm/neon-http';
 import { neon } from '@neondatabase/serverless';
 
-export function getAuth(env: Record<string, string>) {
+export function getAuth(env: Record<string, string>, request?: Request) {
   const sql = neon(env.DATABASE_URL!);
   const db = drizzle({ client: sql });
 
-  let baseUrl = env.BETTER_AUTH_URL || 'http://localhost:5173';
-  if (!baseUrl.endsWith('/api/auth')) {
+  let baseUrl = env.BETTER_AUTH_URL;
+  let originUrl = 'http://localhost:5173';
+  if (!baseUrl && request) {
+    const url = new URL(request.url);
+    originUrl = `${url.protocol}//${url.host}`;
+    baseUrl = `${originUrl}/api/auth`;
+  } else if (!baseUrl) {
+    baseUrl = 'http://localhost:5173/api/auth';
+  } else if (!baseUrl.endsWith('/api/auth')) {
+    originUrl = baseUrl;
     baseUrl = baseUrl.replace(/\/$/, '') + '/api/auth';
+  } else {
+    originUrl = baseUrl.replace(/\/api\/auth$/, '');
   }
 
   return betterAuth({
@@ -18,7 +28,10 @@ export function getAuth(env: Record<string, string>) {
     secret: env.BETTER_AUTH_SECRET,
     baseURL: baseUrl,
     trustedOrigins: [
-      env.BETTER_AUTH_URL || 'http://localhost:5173',
+      originUrl,
+      'http://localhost:5173',
+      'capacitor://localhost',
+      'http://localhost'
     ],
     plugins: [
       magicLink({
