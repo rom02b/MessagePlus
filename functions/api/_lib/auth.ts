@@ -24,10 +24,18 @@ export function getAuth(env: Record<string, string>, request?: Request) {
   } else if (!baseUrl) {
     baseUrl = 'http://localhost:5173/api/auth';
   } else if (!baseUrl.endsWith('/api/auth')) {
+    baseUrl = baseUrl.replace(/\/$/, '');
     originUrl = baseUrl;
-    baseUrl = baseUrl.replace(/\/$/, '') + '/api/auth';
+    baseUrl = baseUrl + '/api/auth';
   } else {
     originUrl = baseUrl.replace(/\/api\/auth$/, '');
+  }
+  originUrl = originUrl.replace(/\/$/, '');
+
+  let requestOrigin = '';
+  if (request) {
+    const url = new URL(request.url);
+    requestOrigin = `${url.protocol}//${url.host}`;
   }
 
   return betterAuth({
@@ -36,10 +44,11 @@ export function getAuth(env: Record<string, string>, request?: Request) {
     baseURL: baseUrl,
     trustedOrigins: [
       originUrl,
+      requestOrigin,
       'http://localhost:5173',
       'capacitor://localhost',
       'http://localhost'
-    ],
+    ].filter(Boolean),
     plugins: [
       magicLink({
         sendMagicLink: async ({ email, url }) => {
