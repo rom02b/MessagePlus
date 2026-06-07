@@ -5,7 +5,14 @@ import { drizzle } from 'drizzle-orm/neon-http';
 import { neon } from '@neondatabase/serverless';
 
 export function getAuth(env: Record<string, string>, request?: Request) {
-  const sql = neon(env.DATABASE_URL!);
+  if (!env.DATABASE_URL) {
+    throw new Error("DATABASE_URL is not defined in the environment.");
+  }
+  if (!env.BETTER_AUTH_SECRET) {
+    throw new Error("BETTER_AUTH_SECRET is not defined in the environment.");
+  }
+
+  const sql = neon(env.DATABASE_URL);
   const db = drizzle({ client: sql });
 
   let baseUrl = env.BETTER_AUTH_URL;
