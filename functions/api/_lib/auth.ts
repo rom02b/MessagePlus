@@ -1,3 +1,14 @@
+import { neon } from '@neondatabase/serverless';
+
+async function hashToken(token: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(token);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashHex;
+}
+
 export async function requireUser(env: Record<string, string>, request: Request) {
   const authHeader = request.headers.get('Authorization');
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -10,43 +21,61 @@ export async function requireUser(env: Record<string, string>, request: Request)
   }
 
   try {
-    const authUrl = env.VITE_NEON_AUTH_URL;
-    if (!authUrl) {
-      throw new Error("VITE_NEON_AUTH_URL est manquant");
+    const databaseUrl = env.DATABASE_URL;
+    if (!databaseUrl) {
+      throw new Error("DATABASE_URL est manquant");
     }
 
-    // Call Better Auth session endpoint directly via fetch.
-    // We pass the token both as a Bearer token and inside all possible cookie names 
-    // that Neon Auth / Better Auth might look for.
-    const response = await fetch(`${authUrl}/get-session`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Cookie': `neonauth.session_token=${token}; __Secure-neonauth.session_token=${token}; better-auth.session_token=${token}; __Secure-better-auth.session_token=${token}`
-      }
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`Session API verification failed: ${response.status} ${response.statusText} - ${text}`);
-    }
-
-    const data: any = await response.json();
+    const sql = neon(databaseUrl);
     
-    // Si data est null, c'est que le token n'a pas été reconnu par l'API
-    if (!data) {
-      throw new Error("Session API returned null (token invalide ou non reconnu par Neon Auth).");
-    }
+    // Le token côté client est en clair, mais Better Auth le stocke haché en SHA-256
+    const hashedToken = await hashToken(token);
+    
+    // On va tenter de chercher le token en clair et le token haché, au cas où
+    const rows = await sql`
+      SELECT u.id, u.email, u.name 
+      FROM neon_auth.session s
+      JOIN neon_auth."user" u ON u.id = s.user_id
+      WHERE (s.token = ${token} OR s.token = ${hashedToken})
+      AND s.expires_at > NOW()
+    `;
 
-    if (data.user) {
+    if (rows && rows.length > 0) {
+      const user = rows[0];
       return {
-        id: data.user.id,
-        email: data.user.email,
-        name: data.user.name,
+        id: user.id,
+        email: user.email,
+        name: user.name,
       };
     }
 
-    throw new Error(`Session API returned invalid data format: ${JSON.stringify(data)}`);
+    throw new Error(`Session non trouvée ou expirée pour ce token (plain et hash essayés)`);
   } catch (err: any) {
-    throw new Error(`Session verification failed: ${err.message}`);
+    if (err.message && err.message.includes("does not exist")) {
+      try {
+        const hashedToken = await hashToken(token);
+        const databaseUrl = env.DATABASE_URL;
+        const sql = neon(databaseUrl!);
+        const rows = await sql`
+          SELECT u.id, u.email, u.name 
+          FROM neon_auth.session s
+          JOIN neon_auth."user" u ON u.id = s."userId"
+          WHERE (s.token = ${token} OR s.token = ${hashedToken})
+          AND s."expiresAt" > NOW()
+        `;
+        if (rows && rows.length > 0) {
+          const user = rows[0];
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          };
+        }
+        throw new Error(`Session DB (camelCase) returned 0 rows for token/hash`);
+      } catch (fallbackErr: any) {
+        throw new Error(`Session DB fallback query failed: ${fallbackErr.message}`);
+      }
+    }
+    throw new Error(`Session DB verification failed: ${err.message}`);
   }
 }
