@@ -202,7 +202,11 @@ export const onRequest: PagesFunction = async (context) => {
         }
     } catch (err: any) {
         // No valid session
-        authError = err.message || authError;
+        if (err.message && err.message.includes('Missing')) {
+            authError = 'Authentification requise. Veuillez vous connecter pour générer du contenu.';
+        } else {
+            authError = err.message || authError;
+        }
     }
 
     if (!authenticatedUser) {
