@@ -18,6 +18,7 @@ import EmailInput from './components/Configuration/EmailInput';
 import DayCard from './components/Results/DayCard';
 import { generateCampaign } from './services/aiService';
 import { getTranscript, isValidYouTubeUrl } from './services/youtubeService';
+import AuthModal from './components/Auth/AuthModal';
 import './App.css';
 
 // Handle /auth/callback route for Neon Auth magic link
@@ -41,6 +42,8 @@ const AppContent: React.FC = () => {
     resetCampaign,
     userEmail,
   } = useCampaign();
+
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const canProceedFromStep1 = () => {
     if (!sourceContent) return false;
@@ -151,7 +154,21 @@ const AppContent: React.FC = () => {
                       <line x1="12" y1="8" x2="12" y2="12" />
                       <line x1="12" y1="16" x2="12.01" y2="16" />
                     </svg>
-                    {error}
+                    <span>
+                      {error}
+                      {error.includes('Authentification requise') && (
+                        <>
+                          {' '}
+                          <button 
+                            type="button" 
+                            onClick={() => setIsAuthModalOpen(true)}
+                            style={{ textDecoration: 'underline', background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer', fontWeight: 'bold' }}
+                          >
+                            Se connecter
+                          </button>
+                        </>
+                      )}
+                    </span>
                   </div>
                 )}
 
@@ -262,7 +279,21 @@ const AppContent: React.FC = () => {
                       <line x1="12" y1="8" x2="12" y2="12" />
                       <line x1="12" y1="16" x2="12.01" y2="16" />
                     </svg>
-                    {error}
+                    <span>
+                      {error}
+                      {error.includes('Authentification requise') && (
+                        <>
+                          {' '}
+                          <button 
+                            type="button" 
+                            onClick={() => setIsAuthModalOpen(true)}
+                            style={{ textDecoration: 'underline', background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer', fontWeight: 'bold' }}
+                          >
+                            Se connecter
+                          </button>
+                        </>
+                      )}
+                    </span>
                   </div>
                 )}
 
@@ -337,6 +368,7 @@ const AppContent: React.FC = () => {
         )}
       </Container>
       </div>
+      {isAuthModalOpen && <AuthModal onClose={() => setIsAuthModalOpen(false)} />}
     </div>
   );
 };
