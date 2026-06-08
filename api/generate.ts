@@ -319,8 +319,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
         
         if (targetEmail) {
+            const cleanEmail = targetEmail.trim();
             // on await pour s'assurer qu'il part avant la fermeture de la function Vercel
-            await sendNotificationEmail(targetEmail, title, days);
+            await sendNotificationEmail(cleanEmail, title, days);
         }
 
         return res.status(200).json({ title, days, quotes, emailSentTo: targetEmail || null });
