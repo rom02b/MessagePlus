@@ -312,8 +312,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // --- Envoi de l'email automatique ---
         let targetEmail = config.userEmail;
         
-        // Si l'utilisateur est connecté, on privilégie son email Auth
-        if (authenticatedUser?.email) {
+        // Si l'utilisateur est connecté et n'a pas spécifié d'email, on prend son email Auth
+        if (!targetEmail && authenticatedUser?.email) {
             targetEmail = authenticatedUser.email;
         }
         

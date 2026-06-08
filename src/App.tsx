@@ -112,10 +112,12 @@ const AppContent: React.FC = () => {
         onReload={(c) => {
           resetCampaign();
           
+          const rawDate = (c as any).createdAt || (c as any).created_at;
           const mappedCampaign = {
             ...c,
-            contentOptions: c.content_options,
-            createdAt: new Date(c.created_at),
+            contentOptions: (c as any).contentOptions || (c as any).content_options,
+            createdAt: rawDate ? new Date(rawDate) : new Date(),
+            isFromHistory: true,
           };
           
           setCampaign(mappedCampaign as any);
@@ -300,12 +302,21 @@ const AppContent: React.FC = () => {
         {campaign && (
           <div className="results-section fade-in">
             <div className="results-header">
-              <h2>Votre parcours Message+ est prêt ! 🎉</h2>
-              <p>Voici les {campaign.days.length} jours de contenu généré pour votre communauté.</p>
-              {userEmail && (
-                <p className="email-sent-notice">
-                  📧 Une copie a été envoyée à {userEmail}
-                </p>
+              {(campaign as any).isFromHistory ? (
+                <>
+                  <h2>{campaign.messageTitle || 'Parcours sauvegardé'}</h2>
+                  <p>Contenu généré de {campaign.days.length} jours.</p>
+                </>
+              ) : (
+                <>
+                  <h2>Votre parcours Message+ est prêt ! 🎉</h2>
+                  <p>Voici les {campaign.days.length} jours de contenu généré pour votre communauté.</p>
+                  {userEmail && (
+                    <p className="email-sent-notice">
+                      📧 Une copie a été envoyée à {userEmail}
+                    </p>
+                  )}
+                </>
               )}
             </div>
 

@@ -26,6 +26,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onReload, onNewCampaign, isOpen, onTo
     const [loading, setLoading] = useState(true);
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [isMobile, setIsMobile] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     // Detect mobile breakpoint
     useEffect(() => {
@@ -78,10 +79,15 @@ const Sidebar: React.FC<SidebarProps> = ({ onReload, onNewCampaign, isOpen, onTo
                 headers: token ? { 'Authorization': `Bearer ${token}` } : {},
                 credentials: 'omit',
             });
-            setCampaigns((prev) => prev.filter((c) => c.id !== id));
+            setCampaigns(campaigns.filter((c) => c.id !== id));
         } finally {
             setDeletingId(null);
         }
+    };
+
+    const handleLogout = async () => {
+        await authClient.signOut();
+        window.location.reload();
     };
 
     const handleItemClick = (campaign: SavedCampaign) => {
@@ -148,6 +154,16 @@ const Sidebar: React.FC<SidebarProps> = ({ onReload, onNewCampaign, isOpen, onTo
                     {/* Content */}
                     <div className="sidebar-content">
                         <div className="sidebar-section-title">Vos parcours</div>
+                        
+                        <div className="sidebar-search">
+                            <input
+                                type="text"
+                                placeholder="Rechercher..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="sidebar-search-input"
+                            />
+                        </div>
 
                         {loading ? (
                             <div className="sidebar-loading">Chargement…</div>
@@ -157,7 +173,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onReload, onNewCampaign, isOpen, onTo
                             </div>
                         ) : (
                             <div className="sidebar-list">
-                                {campaigns.map((c) => (
+                                {campaigns.filter(c => (c.title || 'Parcours sans titre').toLowerCase().includes(searchQuery.toLowerCase())).map((c) => (
                                     <div
                                         key={c.id}
                                         className="sidebar-item"
@@ -171,10 +187,15 @@ const Sidebar: React.FC<SidebarProps> = ({ onReload, onNewCampaign, isOpen, onTo
                                                 {c.title || 'Parcours sans titre'}
                                             </div>
                                             <div className="sidebar-item-meta">
-                                                {new Date(c.created_at).toLocaleDateString('fr-FR', {
-                                                    day: '2-digit',
-                                                    month: 'short',
-                                                })}
+                                                {(() => {
+                                                    const rawDate = (c as any).createdAt || (c as any).created_at;
+                                                    const d = rawDate ? new Date(rawDate) : new Date();
+                                                    const safeDate = isNaN(d.getTime()) ? new Date() : d;
+                                                    return safeDate.toLocaleDateString('fr-FR', {
+                                                        day: '2-digit',
+                                                        month: 'short',
+                                                    });
+                                                })()}
                                                 {' · '}{c.duration}j{' · '}
                                                 {TONE_LABELS[c.tone] || c.tone}
                                             </div>
@@ -198,6 +219,12 @@ const Sidebar: React.FC<SidebarProps> = ({ onReload, onNewCampaign, isOpen, onTo
                                 ))}
                             </div>
                         )}
+                    </div>
+
+                    <div className="sidebar-footer">
+                        <button className="sidebar-logout-btn" onClick={handleLogout}>
+                            Se déconnecter
+                        </button>
                     </div>
                 </div>
             </aside>
