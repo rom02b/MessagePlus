@@ -142,12 +142,13 @@ ${speakerName ? `## ORATEUR / PRÉDICATEUR : ${speakerName}` : ''}
 1. Chaque jour doit avoir son propre thème distinct extrait ou inspiré de la prédication.
 2. Le verset biblique doit être réel et cohérent avec le thème du jour.
 3. Le contenu WhatsApp doit être naturel, comme un message d'ami envoyé dans un groupe communautaire.
-4. L'email doit être complet avec un objet accrocheur et un corps HTML bien structuré.
+4. L'email doit être complet avec un objet accrocheur et un corps HTML bien structuré. IMPORTANT : Tu dois échapper correctement les guillemets dans le HTML (utilise \\" pour les attributs).
 5. Le post réseaux sociaux doit être adapté à Instagram/Facebook.
 6. Respecte scrupuleusement la longueur demandée (${messageLength}).
 7. Toute la réponse doit être en FRANÇAIS.
 8. Tu DOIS ABSOLUMENT générer le champ "title" avec un titre général.
 9. Tu DOIS ABSOLUMENT générer le champ "quotes" avec un tableau de 3 citations piochées dans le texte.
+10. La réponse DOIT être un JSON strictement valide, fais très attention à échapper les guillemets internes et à fermer correctement toutes les accolades et crochets.
 
 ## FORMAT DE RÉPONSE :
 Retourne UNIQUEMENT un objet JSON valide, sans markdown, sans balises \`\`\`json, sans commentaires.
